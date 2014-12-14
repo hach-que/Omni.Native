@@ -2,6 +2,7 @@ Terminals unused in grammar
 
    TOKEN
    CONTINUING_NEWLINE
+   ERROR
    NUMBER
 
 
@@ -81,46 +82,47 @@ COMMA (272) 19
 COMMAND_PIPE (273) 21 22
 SEMICOLON (274) 4
 AMPERSAND (275) 5
-NUMBER (276)
-FRAGMENT (277) 32
-SINGLE_QUOTED (278) 28
-DOUBLE_QUOTED (279) 29
-VARIABLE (280) 9 10 30 33
+ERROR (276)
+NUMBER (277)
+FRAGMENT (278) 32
+SINGLE_QUOTED (279) 28
+DOUBLE_QUOTED (280) 29
+VARIABLE (281) 9 10 30 33
 
 
 Nonterminals, with rules where they appear
 
-$accept (26)
+$accept (27)
     on left: 0
-root (27)
+root (28)
     on left: 1 2, on right: 0 2
-terminator (28)
+terminator (29)
     on left: 3 4, on right: 2
-statement (29)
+statement (30)
     on left: 5 6 7 8, on right: 1 2
-assignment (30)
+assignment (31)
     on left: 9 10, on right: 7
-pipeline (31)
+pipeline (32)
     on left: 11 12, on right: 5 6 12
-instruction (32)
+instruction (33)
     on left: 13 14 15, on right: 11 12
-capture (33)
+capture (34)
     on left: 16 17, on right: 14
-key_values (34)
+key_values (35)
     on left: 18 19, on right: 17 19
-command (35)
+command (36)
     on left: 20, on right: 13 16 17
-pipe_call (36)
+pipe_call (37)
     on left: 21 22, on right: 10 15
-arguments (37)
+arguments (38)
     on left: 23 24, on right: 20 21 24
-fragments (38)
+fragments (39)
     on left: 25 26, on right: 9 23 24 26
-fragment (39)
+fragment (40)
     on left: 27 28 29 30 31, on right: 18 19 25 26 34
-fragment_or_variable (40)
+fragment_or_variable (41)
     on left: 32 33, on right: 18 19 27
-expression (41)
+expression (42)
     on left: 34, on right: 31
 
 

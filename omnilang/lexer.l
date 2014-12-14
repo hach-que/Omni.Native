@@ -35,6 +35,10 @@ pipe                                    { return COMMAND_PIPE; }
 [a-zA-Z_][a-zA-Z_0-9]*                  { yylval.string = bfromcstr(yytext); return VARIABLE; }
 [a-zA-Z\/_\.\-][a-zA-Z\/_0-9\.\-]*      { yylval.string = bfromcstr(yytext); return FRAGMENT; }
 
+    /* TODO This should really be a number value... */
+    
+[0-9]+                                  { yylval.string = bfromcstr(yytext); return FRAGMENT; }
+
 %                                       { return PERCENT; }
 \$                                      { return DOLLAR; }
 [ \t]*\([ \t]*                          { return BEGIN_PAREN; }
@@ -53,3 +57,7 @@ pipe                                    { return COMMAND_PIPE; }
 [ \t]+                                  { return WHITESPACE; }
 \\[ \t]*(\r\n|\r|\n)[ \t]*              { return CONTINUING_NEWLINE; }
 [ \t]*(\r\n|\r|\n)[ \t]*                { return TERMINATING_NEWLINE; }
+
+    /* Default rule for unknown characters */
+
+<*>.|\n                                 { printf("unable to handle text %s in lexer!\n", yytext); return ERROR; }

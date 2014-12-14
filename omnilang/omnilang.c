@@ -11,7 +11,7 @@ PHP_MODULE_BEGIN()
 
 extern ast_node* ast_root;
 static int has_error;
-static bstring* error_string;
+static bstring error_string;
 
 void process_node(zval* output, ast_node* node) {
   zval* arr_children;
@@ -49,14 +49,20 @@ void process_node(zval* output, ast_node* node) {
 void yyerror(char const *s)
 {
   has_error = 1;
-  fprintf(stderr, "%s\n", s);
-  
-  // TODO error_string
+  error_string = bfromcstr(s);
 }
 
 int yywrap()
 {
   return 1;
+}
+
+PHP_FUNCTION(omnilang_get_error) {
+  if (!has_error) {
+    RETURN_NULL();
+  }
+  
+  RETURN_STRINGL(error_string->data, error_string->slen, 1);
 }
 
 PHP_FUNCTION(omnilang_parse) {
@@ -84,4 +90,5 @@ PHP_FUNCTION(omnilang_parse) {
 
 PHP_MODULE(omnilang, 
   PHP_FE(omnilang_parse, NULL)
+  PHP_FE(omnilang_get_error, NULL)
 )
