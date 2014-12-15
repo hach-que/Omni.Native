@@ -35,9 +35,7 @@ pipe                                    { return COMMAND_PIPE; }
 [a-zA-Z_][a-zA-Z_0-9]*                  { yylval.string = bfromcstr(yytext); return VARIABLE; }
 [a-zA-Z\/_\.\-][a-zA-Z\/_0-9\.\-]*      { yylval.string = bfromcstr(yytext); return FRAGMENT; }
 
-    /* TODO This should really be a number value... */
-    
-[0-9]+                                  { yylval.string = bfromcstr(yytext); return FRAGMENT; }
+[0-9]+                                  { yylval.number = strtoul(yytext, NULL, 10); return NUMBER; }
 
 %                                       { return PERCENT; }
 \$                                      { return DOLLAR; }

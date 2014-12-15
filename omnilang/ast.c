@@ -13,6 +13,7 @@ struct tagbstring node_type_subshell = bsStatic("subshell");
 struct tagbstring node_type_arguments = bsStatic("arguments");
 struct tagbstring node_type_fragments = bsStatic("fragments");
 struct tagbstring node_type_fragment = bsStatic("fragment");
+struct tagbstring node_type_number = bsStatic("number");
 struct tagbstring node_type_single_quoted = bsStatic("single_quoted");
 struct tagbstring node_type_double_quoted = bsStatic("double_quoted");
 struct tagbstring node_type_variable = bsStatic("variable");

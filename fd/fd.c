@@ -4,6 +4,11 @@
 #include <phpmodule.h>
 #include <fcntl.h>
 
+// Get the original functionality back after PHP overrides it.
+#ifdef snprintf
+#undef snprintf
+#endif
+
 PHP_MODULE_BEGIN()
 
 PHP_FUNCTION(fd_select) {
@@ -84,7 +89,7 @@ PHP_FUNCTION(fd_select) {
       &read_fds,
       &write_fds,
       &except_fds,
-      &timeout));
+      NULL));
   
   array_init(return_value);
   add_assoc_long(return_value, "ready", ready);
@@ -261,6 +266,23 @@ PHP_FUNCTION(fd_set_blocking) {
   RETURN_NULL();
 }
 
+PHP_FUNCTION(fd_get_error) {
+  TRACE_FUNCTION_CALL();
+  
+  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "") == FAILURE) {
+    RETURN_FALSE;
+  }
+  
+  char* buffer = emalloc(sizeof(char) * 257);
+  memset(buffer, 0, 257);
+  snprintf(buffer, 256, "%m");
+  
+  array_init(return_value);
+  add_assoc_long(return_value, "errno", errno);
+  add_assoc_stringl(return_value, "error", buffer, strlen(buffer), 1);
+  efree(buffer);
+}
+
 PHP_MODULE(fd, 
   PHP_FE(fd_select, NULL)
   PHP_FE(fd_read, NULL)
@@ -269,4 +291,5 @@ PHP_MODULE(fd,
   PHP_FE(fd_dup2, NULL)
   PHP_FE(fd_pipe, NULL)
   PHP_FE(fd_set_blocking, NULL)
+  PHP_FE(fd_get_error, NULL)
 )

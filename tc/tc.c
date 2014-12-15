@@ -25,9 +25,28 @@ PHP_FUNCTION(tc_tcsetpgrp) {
     RETURN_FALSE;
   }
   
-  tcsetpgrp(fd, pgid);
+  if (tcsetpgrp(fd, pgid) === 0) {
+    RETURN_TRUE;
+  } else {
+    RETURN_FALSE;
+  }
+}
+
+PHP_FUNCTION(tc_get_error) {
+  TRACE_FUNCTION_CALL();
   
-  RETURN_TRUE;
+  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "") == FAILURE) {
+    RETURN_FALSE;
+  }
+  
+  char* buffer = emalloc(sizeof(char) * 257);
+  memset(buffer, 0, 257);
+  snprintf(buffer, 256, "%m");
+  
+  array_init(return_value);
+  add_assoc_long(return_value, "errno", errno);
+  add_assoc_stringl(return_value, "error", buffer, strlen(buffer), 1);
+  efree(buffer);
 }
 
 PHP_FUNCTION(tc_tcgetattr) {
@@ -129,4 +148,5 @@ PHP_MODULE(tc,
   PHP_FE(tc_tcgetattr, NULL)
   PHP_FE(tc_tcsetattr, NULL)
   PHP_FE(tc_tcsadrain, NULL)
+  PHP_FE(tc_get_error, NULL)
 )

@@ -29,7 +29,7 @@ ast_node* ast_root;
 %type <node> root statement pipeline instruction
 %type <node> command arguments fragment fragments
 %type <node> capture assignment pipe_call
-%type <node> key_values expression
+%type <node> key_values expression number
 
 %nonassoc PIPE
 %nonassoc AMPERSAND
@@ -206,6 +206,10 @@ fragment:
     $$ = ast_node_create(&node_type_fragment);
     ast_node_set_string($$, bstrcpy($1));
   } |
+  number
+  {
+    $$ = $1;
+  } |
   SINGLE_QUOTED
   {
     $$ = ast_node_create(&node_type_single_quoted);
@@ -225,6 +229,13 @@ fragment:
   {
     $$ = $3;
   };
+  
+number:
+  NUMBER
+  {
+    $$ = ast_node_create(&node_type_number);
+    ast_node_set_number($$, $1);
+  } ;
 
 fragment_or_variable:
   FRAGMENT { $$ = $1; } |

@@ -20,6 +20,7 @@ extern struct tagbstring node_type_subshell;
 extern struct tagbstring node_type_arguments;
 extern struct tagbstring node_type_fragments;
 extern struct tagbstring node_type_fragment;
+extern struct tagbstring node_type_number;
 extern struct tagbstring node_type_single_quoted;
 extern struct tagbstring node_type_double_quoted;
 extern struct tagbstring node_type_variable;

@@ -3,7 +3,6 @@ Terminals unused in grammar
    TOKEN
    CONTINUING_NEWLINE
    ERROR
-   NUMBER
 
 
 Grammar
@@ -49,15 +48,18 @@ Grammar
    26          | fragments fragment
 
    27 fragment: fragment_or_variable
-   28         | SINGLE_QUOTED
-   29         | DOUBLE_QUOTED
-   30         | DOLLAR VARIABLE
-   31         | DOLLAR BEGIN_BRACE expression END_BRACE
+   28         | number
+   29         | SINGLE_QUOTED
+   30         | DOUBLE_QUOTED
+   31         | DOLLAR VARIABLE
+   32         | DOLLAR BEGIN_BRACE expression END_BRACE
 
-   32 fragment_or_variable: FRAGMENT
-   33                     | VARIABLE
+   33 number: NUMBER
 
-   34 expression: fragment
+   34 fragment_or_variable: FRAGMENT
+   35                     | VARIABLE
+
+   36 expression: fragment
 
 
 Terminals, with rules where they appear
@@ -70,24 +72,24 @@ CONTINUING_NEWLINE (260)
 TERMINATING_NEWLINE (261) 3
 PIPE (262) 12
 PERCENT (263) 16 17
-DOLLAR (264) 9 10 30 31
+DOLLAR (264) 9 10 31 32
 BEGIN_PAREN (265) 16 17
 END_PAREN (266) 16 17
 EQUALS (267) 9 10 18 19
 BEGIN_SQUARE (268) 17
 END_SQUARE (269) 17
-BEGIN_BRACE (270) 31
-END_BRACE (271) 31
+BEGIN_BRACE (270) 32
+END_BRACE (271) 32
 COMMA (272) 19
 COMMAND_PIPE (273) 21 22
 SEMICOLON (274) 4
 AMPERSAND (275) 5
 ERROR (276)
-NUMBER (277)
-FRAGMENT (278) 32
-SINGLE_QUOTED (279) 28
-DOUBLE_QUOTED (280) 29
-VARIABLE (281) 9 10 30 33
+NUMBER (277) 33
+FRAGMENT (278) 34
+SINGLE_QUOTED (279) 29
+DOUBLE_QUOTED (280) 30
+VARIABLE (281) 9 10 31 35
 
 
 Nonterminals, with rules where they appear
@@ -119,11 +121,13 @@ arguments (38)
 fragments (39)
     on left: 25 26, on right: 9 23 24 26
 fragment (40)
-    on left: 27 28 29 30 31, on right: 18 19 25 26 34
-fragment_or_variable (41)
-    on left: 32 33, on right: 18 19 27
-expression (42)
-    on left: 34, on right: 31
+    on left: 27 28 29 30 31 32, on right: 18 19 25 26 36
+number (41)
+    on left: 33, on right: 28
+fragment_or_variable (42)
+    on left: 34 35, on right: 18 19 27
+expression (43)
+    on left: 36, on right: 32
 
 
 State 0
@@ -152,35 +156,39 @@ State 0
    25 fragments: . fragment
    26          | . fragments fragment
    27 fragment: . fragment_or_variable
-   28         | . SINGLE_QUOTED
-   29         | . DOUBLE_QUOTED
-   30         | . DOLLAR VARIABLE
-   31         | . DOLLAR BEGIN_BRACE expression END_BRACE
-   32 fragment_or_variable: . FRAGMENT
-   33                     | . VARIABLE
+   28         | . number
+   29         | . SINGLE_QUOTED
+   30         | . DOUBLE_QUOTED
+   31         | . DOLLAR VARIABLE
+   32         | . DOLLAR BEGIN_BRACE expression END_BRACE
+   33 number: . NUMBER
+   34 fragment_or_variable: . FRAGMENT
+   35                     | . VARIABLE
 
     PERCENT        shift, and go to state 1
     DOLLAR         shift, and go to state 2
     COMMAND_PIPE   shift, and go to state 3
-    FRAGMENT       shift, and go to state 4
-    SINGLE_QUOTED  shift, and go to state 5
-    DOUBLE_QUOTED  shift, and go to state 6
-    VARIABLE       shift, and go to state 7
+    NUMBER         shift, and go to state 4
+    FRAGMENT       shift, and go to state 5
+    SINGLE_QUOTED  shift, and go to state 6
+    DOUBLE_QUOTED  shift, and go to state 7
+    VARIABLE       shift, and go to state 8
 
     $default  reduce using rule 8 (statement)
 
-    root                  go to state 8
-    statement             go to state 9
-    assignment            go to state 10
-    pipeline              go to state 11
-    instruction           go to state 12
-    capture               go to state 13
-    command               go to state 14
-    pipe_call             go to state 15
-    arguments             go to state 16
-    fragments             go to state 17
-    fragment              go to state 18
-    fragment_or_variable  go to state 19
+    root                  go to state 9
+    statement             go to state 10
+    assignment            go to state 11
+    pipeline              go to state 12
+    instruction           go to state 13
+    capture               go to state 14
+    command               go to state 15
+    pipe_call             go to state 16
+    arguments             go to state 17
+    fragments             go to state 18
+    fragment              go to state 19
+    number                go to state 20
+    fragment_or_variable  go to state 21
 
 
 State 1
@@ -188,19 +196,19 @@ State 1
    16 capture: PERCENT . BEGIN_PAREN command END_PAREN
    17        | PERCENT . BEGIN_SQUARE key_values END_SQUARE BEGIN_PAREN command END_PAREN
 
-    BEGIN_PAREN   shift, and go to state 20
-    BEGIN_SQUARE  shift, and go to state 21
+    BEGIN_PAREN   shift, and go to state 22
+    BEGIN_SQUARE  shift, and go to state 23
 
 
 State 2
 
     9 assignment: DOLLAR . VARIABLE EQUALS fragments
    10           | DOLLAR . VARIABLE EQUALS pipe_call
-   30 fragment: DOLLAR . VARIABLE
-   31         | DOLLAR . BEGIN_BRACE expression END_BRACE
+   31 fragment: DOLLAR . VARIABLE
+   32         | DOLLAR . BEGIN_BRACE expression END_BRACE
 
-    BEGIN_BRACE  shift, and go to state 22
-    VARIABLE     shift, and go to state 23
+    BEGIN_BRACE  shift, and go to state 24
+    VARIABLE     shift, and go to state 25
 
 
 State 3
@@ -208,156 +216,174 @@ State 3
    21 pipe_call: COMMAND_PIPE . WHITESPACE arguments
    22          | COMMAND_PIPE .  [$end, TERMINATING_NEWLINE, PIPE, SEMICOLON, AMPERSAND]
 
-    WHITESPACE  shift, and go to state 24
+    WHITESPACE  shift, and go to state 26
 
     $default  reduce using rule 22 (pipe_call)
 
 
 State 4
 
-   32 fragment_or_variable: FRAGMENT .
+   33 number: NUMBER .
 
-    $default  reduce using rule 32 (fragment_or_variable)
+    $default  reduce using rule 33 (number)
 
 
 State 5
 
-   28 fragment: SINGLE_QUOTED .
+   34 fragment_or_variable: FRAGMENT .
 
-    $default  reduce using rule 28 (fragment)
+    $default  reduce using rule 34 (fragment_or_variable)
 
 
 State 6
 
-   29 fragment: DOUBLE_QUOTED .
+   29 fragment: SINGLE_QUOTED .
 
     $default  reduce using rule 29 (fragment)
 
 
 State 7
 
-   33 fragment_or_variable: VARIABLE .
+   30 fragment: DOUBLE_QUOTED .
 
-    $default  reduce using rule 33 (fragment_or_variable)
+    $default  reduce using rule 30 (fragment)
 
 
 State 8
+
+   35 fragment_or_variable: VARIABLE .
+
+    $default  reduce using rule 35 (fragment_or_variable)
+
+
+State 9
 
     0 $accept: root . $end
     2 root: root . terminator statement
     3 terminator: . TERMINATING_NEWLINE
     4           | . SEMICOLON
 
-    $end                 shift, and go to state 25
-    TERMINATING_NEWLINE  shift, and go to state 26
-    SEMICOLON            shift, and go to state 27
+    $end                 shift, and go to state 27
+    TERMINATING_NEWLINE  shift, and go to state 28
+    SEMICOLON            shift, and go to state 29
 
-    terminator  go to state 28
+    terminator  go to state 30
 
 
-State 9
+State 10
 
     1 root: statement .
 
     $default  reduce using rule 1 (root)
 
 
-State 10
+State 11
 
     7 statement: assignment .
 
     $default  reduce using rule 7 (statement)
 
 
-State 11
+State 12
 
     5 statement: pipeline . AMPERSAND
     6          | pipeline .  [$end, TERMINATING_NEWLINE, SEMICOLON]
    12 pipeline: pipeline . PIPE instruction
 
-    PIPE       shift, and go to state 29
-    AMPERSAND  shift, and go to state 30
+    PIPE       shift, and go to state 31
+    AMPERSAND  shift, and go to state 32
 
     $default  reduce using rule 6 (statement)
 
 
-State 12
+State 13
 
    11 pipeline: instruction .
 
     $default  reduce using rule 11 (pipeline)
 
 
-State 13
+State 14
 
    14 instruction: capture .
 
     $default  reduce using rule 14 (instruction)
 
 
-State 14
+State 15
 
    13 instruction: command .
 
     $default  reduce using rule 13 (instruction)
 
 
-State 15
+State 16
 
    15 instruction: pipe_call .
 
     $default  reduce using rule 15 (instruction)
 
 
-State 16
+State 17
 
    20 command: arguments .  [$end, TERMINATING_NEWLINE, PIPE, END_PAREN, SEMICOLON, AMPERSAND]
    24 arguments: arguments . WHITESPACE fragments
 
-    WHITESPACE  shift, and go to state 31
+    WHITESPACE  shift, and go to state 33
 
     $default  reduce using rule 20 (command)
 
 
-State 17
+State 18
 
    23 arguments: fragments .  [$end, WHITESPACE, TERMINATING_NEWLINE, PIPE, END_PAREN, SEMICOLON, AMPERSAND]
    26 fragments: fragments . fragment
    27 fragment: . fragment_or_variable
-   28         | . SINGLE_QUOTED
-   29         | . DOUBLE_QUOTED
-   30         | . DOLLAR VARIABLE
-   31         | . DOLLAR BEGIN_BRACE expression END_BRACE
-   32 fragment_or_variable: . FRAGMENT
-   33                     | . VARIABLE
+   28         | . number
+   29         | . SINGLE_QUOTED
+   30         | . DOUBLE_QUOTED
+   31         | . DOLLAR VARIABLE
+   32         | . DOLLAR BEGIN_BRACE expression END_BRACE
+   33 number: . NUMBER
+   34 fragment_or_variable: . FRAGMENT
+   35                     | . VARIABLE
 
-    DOLLAR         shift, and go to state 32
-    FRAGMENT       shift, and go to state 4
-    SINGLE_QUOTED  shift, and go to state 5
-    DOUBLE_QUOTED  shift, and go to state 6
-    VARIABLE       shift, and go to state 7
+    DOLLAR         shift, and go to state 34
+    NUMBER         shift, and go to state 4
+    FRAGMENT       shift, and go to state 5
+    SINGLE_QUOTED  shift, and go to state 6
+    DOUBLE_QUOTED  shift, and go to state 7
+    VARIABLE       shift, and go to state 8
 
     $default  reduce using rule 23 (arguments)
 
-    fragment              go to state 33
-    fragment_or_variable  go to state 19
+    fragment              go to state 35
+    number                go to state 20
+    fragment_or_variable  go to state 21
 
 
-State 18
+State 19
 
    25 fragments: fragment .
 
     $default  reduce using rule 25 (fragments)
 
 
-State 19
+State 20
+
+   28 fragment: number .
+
+    $default  reduce using rule 28 (fragment)
+
+
+State 21
 
    27 fragment: fragment_or_variable .
 
     $default  reduce using rule 27 (fragment)
 
 
-State 20
+State 22
 
    16 capture: PERCENT BEGIN_PAREN . command END_PAREN
    20 command: . arguments
@@ -366,76 +392,84 @@ State 20
    25 fragments: . fragment
    26          | . fragments fragment
    27 fragment: . fragment_or_variable
-   28         | . SINGLE_QUOTED
-   29         | . DOUBLE_QUOTED
-   30         | . DOLLAR VARIABLE
-   31         | . DOLLAR BEGIN_BRACE expression END_BRACE
-   32 fragment_or_variable: . FRAGMENT
-   33                     | . VARIABLE
+   28         | . number
+   29         | . SINGLE_QUOTED
+   30         | . DOUBLE_QUOTED
+   31         | . DOLLAR VARIABLE
+   32         | . DOLLAR BEGIN_BRACE expression END_BRACE
+   33 number: . NUMBER
+   34 fragment_or_variable: . FRAGMENT
+   35                     | . VARIABLE
 
-    DOLLAR         shift, and go to state 32
-    FRAGMENT       shift, and go to state 4
-    SINGLE_QUOTED  shift, and go to state 5
-    DOUBLE_QUOTED  shift, and go to state 6
-    VARIABLE       shift, and go to state 7
+    DOLLAR         shift, and go to state 34
+    NUMBER         shift, and go to state 4
+    FRAGMENT       shift, and go to state 5
+    SINGLE_QUOTED  shift, and go to state 6
+    DOUBLE_QUOTED  shift, and go to state 7
+    VARIABLE       shift, and go to state 8
 
-    command               go to state 34
-    arguments             go to state 16
-    fragments             go to state 17
-    fragment              go to state 18
-    fragment_or_variable  go to state 19
-
-
-State 21
-
-   17 capture: PERCENT BEGIN_SQUARE . key_values END_SQUARE BEGIN_PAREN command END_PAREN
-   18 key_values: . fragment_or_variable EQUALS fragment
-   19           | . key_values COMMA fragment_or_variable EQUALS fragment
-   32 fragment_or_variable: . FRAGMENT
-   33                     | . VARIABLE
-
-    FRAGMENT  shift, and go to state 4
-    VARIABLE  shift, and go to state 7
-
-    key_values            go to state 35
-    fragment_or_variable  go to state 36
-
-
-State 22
-
-   27 fragment: . fragment_or_variable
-   28         | . SINGLE_QUOTED
-   29         | . DOUBLE_QUOTED
-   30         | . DOLLAR VARIABLE
-   31         | . DOLLAR BEGIN_BRACE expression END_BRACE
-   31         | DOLLAR BEGIN_BRACE . expression END_BRACE
-   32 fragment_or_variable: . FRAGMENT
-   33                     | . VARIABLE
-   34 expression: . fragment
-
-    DOLLAR         shift, and go to state 32
-    FRAGMENT       shift, and go to state 4
-    SINGLE_QUOTED  shift, and go to state 5
-    DOUBLE_QUOTED  shift, and go to state 6
-    VARIABLE       shift, and go to state 7
-
-    fragment              go to state 37
-    fragment_or_variable  go to state 19
-    expression            go to state 38
+    command               go to state 36
+    arguments             go to state 17
+    fragments             go to state 18
+    fragment              go to state 19
+    number                go to state 20
+    fragment_or_variable  go to state 21
 
 
 State 23
 
-    9 assignment: DOLLAR VARIABLE . EQUALS fragments
-   10           | DOLLAR VARIABLE . EQUALS pipe_call
-   30 fragment: DOLLAR VARIABLE .  [$end, WHITESPACE, TERMINATING_NEWLINE, PIPE, DOLLAR, SEMICOLON, AMPERSAND, FRAGMENT, SINGLE_QUOTED, DOUBLE_QUOTED, VARIABLE]
+   17 capture: PERCENT BEGIN_SQUARE . key_values END_SQUARE BEGIN_PAREN command END_PAREN
+   18 key_values: . fragment_or_variable EQUALS fragment
+   19           | . key_values COMMA fragment_or_variable EQUALS fragment
+   34 fragment_or_variable: . FRAGMENT
+   35                     | . VARIABLE
 
-    EQUALS  shift, and go to state 39
+    FRAGMENT  shift, and go to state 5
+    VARIABLE  shift, and go to state 8
 
-    $default  reduce using rule 30 (fragment)
+    key_values            go to state 37
+    fragment_or_variable  go to state 38
 
 
 State 24
+
+   27 fragment: . fragment_or_variable
+   28         | . number
+   29         | . SINGLE_QUOTED
+   30         | . DOUBLE_QUOTED
+   31         | . DOLLAR VARIABLE
+   32         | . DOLLAR BEGIN_BRACE expression END_BRACE
+   32         | DOLLAR BEGIN_BRACE . expression END_BRACE
+   33 number: . NUMBER
+   34 fragment_or_variable: . FRAGMENT
+   35                     | . VARIABLE
+   36 expression: . fragment
+
+    DOLLAR         shift, and go to state 34
+    NUMBER         shift, and go to state 4
+    FRAGMENT       shift, and go to state 5
+    SINGLE_QUOTED  shift, and go to state 6
+    DOUBLE_QUOTED  shift, and go to state 7
+    VARIABLE       shift, and go to state 8
+
+    fragment              go to state 39
+    number                go to state 20
+    fragment_or_variable  go to state 21
+    expression            go to state 40
+
+
+State 25
+
+    9 assignment: DOLLAR VARIABLE . EQUALS fragments
+   10           | DOLLAR VARIABLE . EQUALS pipe_call
+   31 fragment: DOLLAR VARIABLE .  [$end, WHITESPACE, TERMINATING_NEWLINE, PIPE, DOLLAR, SEMICOLON, AMPERSAND, NUMBER, FRAGMENT, SINGLE_QUOTED, DOUBLE_QUOTED, VARIABLE]
+
+    EQUALS  shift, and go to state 41
+
+    $default  reduce using rule 31 (fragment)
+
+
+State 26
 
    21 pipe_call: COMMAND_PIPE WHITESPACE . arguments
    23 arguments: . fragments
@@ -443,47 +477,51 @@ State 24
    25 fragments: . fragment
    26          | . fragments fragment
    27 fragment: . fragment_or_variable
-   28         | . SINGLE_QUOTED
-   29         | . DOUBLE_QUOTED
-   30         | . DOLLAR VARIABLE
-   31         | . DOLLAR BEGIN_BRACE expression END_BRACE
-   32 fragment_or_variable: . FRAGMENT
-   33                     | . VARIABLE
+   28         | . number
+   29         | . SINGLE_QUOTED
+   30         | . DOUBLE_QUOTED
+   31         | . DOLLAR VARIABLE
+   32         | . DOLLAR BEGIN_BRACE expression END_BRACE
+   33 number: . NUMBER
+   34 fragment_or_variable: . FRAGMENT
+   35                     | . VARIABLE
 
-    DOLLAR         shift, and go to state 32
-    FRAGMENT       shift, and go to state 4
-    SINGLE_QUOTED  shift, and go to state 5
-    DOUBLE_QUOTED  shift, and go to state 6
-    VARIABLE       shift, and go to state 7
+    DOLLAR         shift, and go to state 34
+    NUMBER         shift, and go to state 4
+    FRAGMENT       shift, and go to state 5
+    SINGLE_QUOTED  shift, and go to state 6
+    DOUBLE_QUOTED  shift, and go to state 7
+    VARIABLE       shift, and go to state 8
 
-    arguments             go to state 40
-    fragments             go to state 17
-    fragment              go to state 18
-    fragment_or_variable  go to state 19
+    arguments             go to state 42
+    fragments             go to state 18
+    fragment              go to state 19
+    number                go to state 20
+    fragment_or_variable  go to state 21
 
 
-State 25
+State 27
 
     0 $accept: root $end .
 
     $default  accept
 
 
-State 26
+State 28
 
     3 terminator: TERMINATING_NEWLINE .
 
     $default  reduce using rule 3 (terminator)
 
 
-State 27
+State 29
 
     4 terminator: SEMICOLON .
 
     $default  reduce using rule 4 (terminator)
 
 
-State 28
+State 30
 
     2 root: root terminator . statement
     5 statement: . pipeline AMPERSAND
@@ -507,37 +545,41 @@ State 28
    25 fragments: . fragment
    26          | . fragments fragment
    27 fragment: . fragment_or_variable
-   28         | . SINGLE_QUOTED
-   29         | . DOUBLE_QUOTED
-   30         | . DOLLAR VARIABLE
-   31         | . DOLLAR BEGIN_BRACE expression END_BRACE
-   32 fragment_or_variable: . FRAGMENT
-   33                     | . VARIABLE
+   28         | . number
+   29         | . SINGLE_QUOTED
+   30         | . DOUBLE_QUOTED
+   31         | . DOLLAR VARIABLE
+   32         | . DOLLAR BEGIN_BRACE expression END_BRACE
+   33 number: . NUMBER
+   34 fragment_or_variable: . FRAGMENT
+   35                     | . VARIABLE
 
     PERCENT        shift, and go to state 1
     DOLLAR         shift, and go to state 2
     COMMAND_PIPE   shift, and go to state 3
-    FRAGMENT       shift, and go to state 4
-    SINGLE_QUOTED  shift, and go to state 5
-    DOUBLE_QUOTED  shift, and go to state 6
-    VARIABLE       shift, and go to state 7
+    NUMBER         shift, and go to state 4
+    FRAGMENT       shift, and go to state 5
+    SINGLE_QUOTED  shift, and go to state 6
+    DOUBLE_QUOTED  shift, and go to state 7
+    VARIABLE       shift, and go to state 8
 
     $default  reduce using rule 8 (statement)
 
-    statement             go to state 41
-    assignment            go to state 10
-    pipeline              go to state 11
-    instruction           go to state 12
-    capture               go to state 13
-    command               go to state 14
-    pipe_call             go to state 15
-    arguments             go to state 16
-    fragments             go to state 17
-    fragment              go to state 18
-    fragment_or_variable  go to state 19
+    statement             go to state 43
+    assignment            go to state 11
+    pipeline              go to state 12
+    instruction           go to state 13
+    capture               go to state 14
+    command               go to state 15
+    pipe_call             go to state 16
+    arguments             go to state 17
+    fragments             go to state 18
+    fragment              go to state 19
+    number                go to state 20
+    fragment_or_variable  go to state 21
 
 
-State 29
+State 31
 
    12 pipeline: pipeline PIPE . instruction
    13 instruction: . command
@@ -553,116 +595,124 @@ State 29
    25 fragments: . fragment
    26          | . fragments fragment
    27 fragment: . fragment_or_variable
-   28         | . SINGLE_QUOTED
-   29         | . DOUBLE_QUOTED
-   30         | . DOLLAR VARIABLE
-   31         | . DOLLAR BEGIN_BRACE expression END_BRACE
-   32 fragment_or_variable: . FRAGMENT
-   33                     | . VARIABLE
+   28         | . number
+   29         | . SINGLE_QUOTED
+   30         | . DOUBLE_QUOTED
+   31         | . DOLLAR VARIABLE
+   32         | . DOLLAR BEGIN_BRACE expression END_BRACE
+   33 number: . NUMBER
+   34 fragment_or_variable: . FRAGMENT
+   35                     | . VARIABLE
 
     PERCENT        shift, and go to state 1
-    DOLLAR         shift, and go to state 32
+    DOLLAR         shift, and go to state 34
     COMMAND_PIPE   shift, and go to state 3
-    FRAGMENT       shift, and go to state 4
-    SINGLE_QUOTED  shift, and go to state 5
-    DOUBLE_QUOTED  shift, and go to state 6
-    VARIABLE       shift, and go to state 7
+    NUMBER         shift, and go to state 4
+    FRAGMENT       shift, and go to state 5
+    SINGLE_QUOTED  shift, and go to state 6
+    DOUBLE_QUOTED  shift, and go to state 7
+    VARIABLE       shift, and go to state 8
 
-    instruction           go to state 42
-    capture               go to state 13
-    command               go to state 14
-    pipe_call             go to state 15
-    arguments             go to state 16
-    fragments             go to state 17
-    fragment              go to state 18
-    fragment_or_variable  go to state 19
+    instruction           go to state 44
+    capture               go to state 14
+    command               go to state 15
+    pipe_call             go to state 16
+    arguments             go to state 17
+    fragments             go to state 18
+    fragment              go to state 19
+    number                go to state 20
+    fragment_or_variable  go to state 21
 
 
-State 30
+State 32
 
     5 statement: pipeline AMPERSAND .
 
     $default  reduce using rule 5 (statement)
 
 
-State 31
+State 33
 
    24 arguments: arguments WHITESPACE . fragments
    25 fragments: . fragment
    26          | . fragments fragment
    27 fragment: . fragment_or_variable
-   28         | . SINGLE_QUOTED
-   29         | . DOUBLE_QUOTED
-   30         | . DOLLAR VARIABLE
-   31         | . DOLLAR BEGIN_BRACE expression END_BRACE
-   32 fragment_or_variable: . FRAGMENT
-   33                     | . VARIABLE
+   28         | . number
+   29         | . SINGLE_QUOTED
+   30         | . DOUBLE_QUOTED
+   31         | . DOLLAR VARIABLE
+   32         | . DOLLAR BEGIN_BRACE expression END_BRACE
+   33 number: . NUMBER
+   34 fragment_or_variable: . FRAGMENT
+   35                     | . VARIABLE
 
-    DOLLAR         shift, and go to state 32
-    FRAGMENT       shift, and go to state 4
-    SINGLE_QUOTED  shift, and go to state 5
-    DOUBLE_QUOTED  shift, and go to state 6
-    VARIABLE       shift, and go to state 7
+    DOLLAR         shift, and go to state 34
+    NUMBER         shift, and go to state 4
+    FRAGMENT       shift, and go to state 5
+    SINGLE_QUOTED  shift, and go to state 6
+    DOUBLE_QUOTED  shift, and go to state 7
+    VARIABLE       shift, and go to state 8
 
-    fragments             go to state 43
-    fragment              go to state 18
-    fragment_or_variable  go to state 19
-
-
-State 32
-
-   30 fragment: DOLLAR . VARIABLE
-   31         | DOLLAR . BEGIN_BRACE expression END_BRACE
-
-    BEGIN_BRACE  shift, and go to state 22
-    VARIABLE     shift, and go to state 44
+    fragments             go to state 45
+    fragment              go to state 19
+    number                go to state 20
+    fragment_or_variable  go to state 21
 
 
-State 33
+State 34
+
+   31 fragment: DOLLAR . VARIABLE
+   32         | DOLLAR . BEGIN_BRACE expression END_BRACE
+
+    BEGIN_BRACE  shift, and go to state 24
+    VARIABLE     shift, and go to state 46
+
+
+State 35
 
    26 fragments: fragments fragment .
 
     $default  reduce using rule 26 (fragments)
 
 
-State 34
+State 36
 
    16 capture: PERCENT BEGIN_PAREN command . END_PAREN
 
-    END_PAREN  shift, and go to state 45
-
-
-State 35
-
-   17 capture: PERCENT BEGIN_SQUARE key_values . END_SQUARE BEGIN_PAREN command END_PAREN
-   19 key_values: key_values . COMMA fragment_or_variable EQUALS fragment
-
-    END_SQUARE  shift, and go to state 46
-    COMMA       shift, and go to state 47
-
-
-State 36
-
-   18 key_values: fragment_or_variable . EQUALS fragment
-
-    EQUALS  shift, and go to state 48
+    END_PAREN  shift, and go to state 47
 
 
 State 37
 
-   34 expression: fragment .
+   17 capture: PERCENT BEGIN_SQUARE key_values . END_SQUARE BEGIN_PAREN command END_PAREN
+   19 key_values: key_values . COMMA fragment_or_variable EQUALS fragment
 
-    $default  reduce using rule 34 (expression)
+    END_SQUARE  shift, and go to state 48
+    COMMA       shift, and go to state 49
 
 
 State 38
 
-   31 fragment: DOLLAR BEGIN_BRACE expression . END_BRACE
+   18 key_values: fragment_or_variable . EQUALS fragment
 
-    END_BRACE  shift, and go to state 49
+    EQUALS  shift, and go to state 50
 
 
 State 39
+
+   36 expression: fragment .
+
+    $default  reduce using rule 36 (expression)
+
+
+State 40
+
+   32 fragment: DOLLAR BEGIN_BRACE expression . END_BRACE
+
+    END_BRACE  shift, and go to state 51
+
+
+State 41
 
     9 assignment: DOLLAR VARIABLE EQUALS . fragments
    10           | DOLLAR VARIABLE EQUALS . pipe_call
@@ -671,167 +721,183 @@ State 39
    25 fragments: . fragment
    26          | . fragments fragment
    27 fragment: . fragment_or_variable
-   28         | . SINGLE_QUOTED
-   29         | . DOUBLE_QUOTED
-   30         | . DOLLAR VARIABLE
-   31         | . DOLLAR BEGIN_BRACE expression END_BRACE
-   32 fragment_or_variable: . FRAGMENT
-   33                     | . VARIABLE
+   28         | . number
+   29         | . SINGLE_QUOTED
+   30         | . DOUBLE_QUOTED
+   31         | . DOLLAR VARIABLE
+   32         | . DOLLAR BEGIN_BRACE expression END_BRACE
+   33 number: . NUMBER
+   34 fragment_or_variable: . FRAGMENT
+   35                     | . VARIABLE
 
-    DOLLAR         shift, and go to state 32
+    DOLLAR         shift, and go to state 34
     COMMAND_PIPE   shift, and go to state 3
-    FRAGMENT       shift, and go to state 4
-    SINGLE_QUOTED  shift, and go to state 5
-    DOUBLE_QUOTED  shift, and go to state 6
-    VARIABLE       shift, and go to state 7
+    NUMBER         shift, and go to state 4
+    FRAGMENT       shift, and go to state 5
+    SINGLE_QUOTED  shift, and go to state 6
+    DOUBLE_QUOTED  shift, and go to state 7
+    VARIABLE       shift, and go to state 8
 
-    pipe_call             go to state 50
-    fragments             go to state 51
-    fragment              go to state 18
-    fragment_or_variable  go to state 19
+    pipe_call             go to state 52
+    fragments             go to state 53
+    fragment              go to state 19
+    number                go to state 20
+    fragment_or_variable  go to state 21
 
 
-State 40
+State 42
 
    21 pipe_call: COMMAND_PIPE WHITESPACE arguments .  [$end, TERMINATING_NEWLINE, PIPE, SEMICOLON, AMPERSAND]
    24 arguments: arguments . WHITESPACE fragments
 
-    WHITESPACE  shift, and go to state 31
+    WHITESPACE  shift, and go to state 33
 
     $default  reduce using rule 21 (pipe_call)
 
 
-State 41
+State 43
 
     2 root: root terminator statement .
 
     $default  reduce using rule 2 (root)
 
 
-State 42
+State 44
 
    12 pipeline: pipeline PIPE instruction .
 
     $default  reduce using rule 12 (pipeline)
 
 
-State 43
+State 45
 
    24 arguments: arguments WHITESPACE fragments .  [$end, WHITESPACE, TERMINATING_NEWLINE, PIPE, END_PAREN, SEMICOLON, AMPERSAND]
    26 fragments: fragments . fragment
    27 fragment: . fragment_or_variable
-   28         | . SINGLE_QUOTED
-   29         | . DOUBLE_QUOTED
-   30         | . DOLLAR VARIABLE
-   31         | . DOLLAR BEGIN_BRACE expression END_BRACE
-   32 fragment_or_variable: . FRAGMENT
-   33                     | . VARIABLE
+   28         | . number
+   29         | . SINGLE_QUOTED
+   30         | . DOUBLE_QUOTED
+   31         | . DOLLAR VARIABLE
+   32         | . DOLLAR BEGIN_BRACE expression END_BRACE
+   33 number: . NUMBER
+   34 fragment_or_variable: . FRAGMENT
+   35                     | . VARIABLE
 
-    DOLLAR         shift, and go to state 32
-    FRAGMENT       shift, and go to state 4
-    SINGLE_QUOTED  shift, and go to state 5
-    DOUBLE_QUOTED  shift, and go to state 6
-    VARIABLE       shift, and go to state 7
+    DOLLAR         shift, and go to state 34
+    NUMBER         shift, and go to state 4
+    FRAGMENT       shift, and go to state 5
+    SINGLE_QUOTED  shift, and go to state 6
+    DOUBLE_QUOTED  shift, and go to state 7
+    VARIABLE       shift, and go to state 8
 
     $default  reduce using rule 24 (arguments)
 
-    fragment              go to state 33
-    fragment_or_variable  go to state 19
+    fragment              go to state 35
+    number                go to state 20
+    fragment_or_variable  go to state 21
 
 
-State 44
+State 46
 
-   30 fragment: DOLLAR VARIABLE .
+   31 fragment: DOLLAR VARIABLE .
 
-    $default  reduce using rule 30 (fragment)
+    $default  reduce using rule 31 (fragment)
 
 
-State 45
+State 47
 
    16 capture: PERCENT BEGIN_PAREN command END_PAREN .
 
     $default  reduce using rule 16 (capture)
 
 
-State 46
+State 48
 
    17 capture: PERCENT BEGIN_SQUARE key_values END_SQUARE . BEGIN_PAREN command END_PAREN
 
-    BEGIN_PAREN  shift, and go to state 52
-
-
-State 47
-
-   19 key_values: key_values COMMA . fragment_or_variable EQUALS fragment
-   32 fragment_or_variable: . FRAGMENT
-   33                     | . VARIABLE
-
-    FRAGMENT  shift, and go to state 4
-    VARIABLE  shift, and go to state 7
-
-    fragment_or_variable  go to state 53
-
-
-State 48
-
-   18 key_values: fragment_or_variable EQUALS . fragment
-   27 fragment: . fragment_or_variable
-   28         | . SINGLE_QUOTED
-   29         | . DOUBLE_QUOTED
-   30         | . DOLLAR VARIABLE
-   31         | . DOLLAR BEGIN_BRACE expression END_BRACE
-   32 fragment_or_variable: . FRAGMENT
-   33                     | . VARIABLE
-
-    DOLLAR         shift, and go to state 32
-    FRAGMENT       shift, and go to state 4
-    SINGLE_QUOTED  shift, and go to state 5
-    DOUBLE_QUOTED  shift, and go to state 6
-    VARIABLE       shift, and go to state 7
-
-    fragment              go to state 54
-    fragment_or_variable  go to state 19
+    BEGIN_PAREN  shift, and go to state 54
 
 
 State 49
 
-   31 fragment: DOLLAR BEGIN_BRACE expression END_BRACE .
+   19 key_values: key_values COMMA . fragment_or_variable EQUALS fragment
+   34 fragment_or_variable: . FRAGMENT
+   35                     | . VARIABLE
 
-    $default  reduce using rule 31 (fragment)
+    FRAGMENT  shift, and go to state 5
+    VARIABLE  shift, and go to state 8
+
+    fragment_or_variable  go to state 55
 
 
 State 50
+
+   18 key_values: fragment_or_variable EQUALS . fragment
+   27 fragment: . fragment_or_variable
+   28         | . number
+   29         | . SINGLE_QUOTED
+   30         | . DOUBLE_QUOTED
+   31         | . DOLLAR VARIABLE
+   32         | . DOLLAR BEGIN_BRACE expression END_BRACE
+   33 number: . NUMBER
+   34 fragment_or_variable: . FRAGMENT
+   35                     | . VARIABLE
+
+    DOLLAR         shift, and go to state 34
+    NUMBER         shift, and go to state 4
+    FRAGMENT       shift, and go to state 5
+    SINGLE_QUOTED  shift, and go to state 6
+    DOUBLE_QUOTED  shift, and go to state 7
+    VARIABLE       shift, and go to state 8
+
+    fragment              go to state 56
+    number                go to state 20
+    fragment_or_variable  go to state 21
+
+
+State 51
+
+   32 fragment: DOLLAR BEGIN_BRACE expression END_BRACE .
+
+    $default  reduce using rule 32 (fragment)
+
+
+State 52
 
    10 assignment: DOLLAR VARIABLE EQUALS pipe_call .
 
     $default  reduce using rule 10 (assignment)
 
 
-State 51
+State 53
 
     9 assignment: DOLLAR VARIABLE EQUALS fragments .  [$end, TERMINATING_NEWLINE, SEMICOLON]
    26 fragments: fragments . fragment
    27 fragment: . fragment_or_variable
-   28         | . SINGLE_QUOTED
-   29         | . DOUBLE_QUOTED
-   30         | . DOLLAR VARIABLE
-   31         | . DOLLAR BEGIN_BRACE expression END_BRACE
-   32 fragment_or_variable: . FRAGMENT
-   33                     | . VARIABLE
+   28         | . number
+   29         | . SINGLE_QUOTED
+   30         | . DOUBLE_QUOTED
+   31         | . DOLLAR VARIABLE
+   32         | . DOLLAR BEGIN_BRACE expression END_BRACE
+   33 number: . NUMBER
+   34 fragment_or_variable: . FRAGMENT
+   35                     | . VARIABLE
 
-    DOLLAR         shift, and go to state 32
-    FRAGMENT       shift, and go to state 4
-    SINGLE_QUOTED  shift, and go to state 5
-    DOUBLE_QUOTED  shift, and go to state 6
-    VARIABLE       shift, and go to state 7
+    DOLLAR         shift, and go to state 34
+    NUMBER         shift, and go to state 4
+    FRAGMENT       shift, and go to state 5
+    SINGLE_QUOTED  shift, and go to state 6
+    DOUBLE_QUOTED  shift, and go to state 7
+    VARIABLE       shift, and go to state 8
 
     $default  reduce using rule 9 (assignment)
 
-    fragment              go to state 33
-    fragment_or_variable  go to state 19
+    fragment              go to state 35
+    number                go to state 20
+    fragment_or_variable  go to state 21
 
 
-State 52
+State 54
 
    17 capture: PERCENT BEGIN_SQUARE key_values END_SQUARE BEGIN_PAREN . command END_PAREN
    20 command: . arguments
@@ -840,76 +906,84 @@ State 52
    25 fragments: . fragment
    26          | . fragments fragment
    27 fragment: . fragment_or_variable
-   28         | . SINGLE_QUOTED
-   29         | . DOUBLE_QUOTED
-   30         | . DOLLAR VARIABLE
-   31         | . DOLLAR BEGIN_BRACE expression END_BRACE
-   32 fragment_or_variable: . FRAGMENT
-   33                     | . VARIABLE
+   28         | . number
+   29         | . SINGLE_QUOTED
+   30         | . DOUBLE_QUOTED
+   31         | . DOLLAR VARIABLE
+   32         | . DOLLAR BEGIN_BRACE expression END_BRACE
+   33 number: . NUMBER
+   34 fragment_or_variable: . FRAGMENT
+   35                     | . VARIABLE
 
-    DOLLAR         shift, and go to state 32
-    FRAGMENT       shift, and go to state 4
-    SINGLE_QUOTED  shift, and go to state 5
-    DOUBLE_QUOTED  shift, and go to state 6
-    VARIABLE       shift, and go to state 7
+    DOLLAR         shift, and go to state 34
+    NUMBER         shift, and go to state 4
+    FRAGMENT       shift, and go to state 5
+    SINGLE_QUOTED  shift, and go to state 6
+    DOUBLE_QUOTED  shift, and go to state 7
+    VARIABLE       shift, and go to state 8
 
-    command               go to state 55
-    arguments             go to state 16
-    fragments             go to state 17
-    fragment              go to state 18
-    fragment_or_variable  go to state 19
+    command               go to state 57
+    arguments             go to state 17
+    fragments             go to state 18
+    fragment              go to state 19
+    number                go to state 20
+    fragment_or_variable  go to state 21
 
 
-State 53
+State 55
 
    19 key_values: key_values COMMA fragment_or_variable . EQUALS fragment
 
-    EQUALS  shift, and go to state 56
+    EQUALS  shift, and go to state 58
 
 
-State 54
+State 56
 
    18 key_values: fragment_or_variable EQUALS fragment .
 
     $default  reduce using rule 18 (key_values)
 
 
-State 55
+State 57
 
    17 capture: PERCENT BEGIN_SQUARE key_values END_SQUARE BEGIN_PAREN command . END_PAREN
 
-    END_PAREN  shift, and go to state 57
+    END_PAREN  shift, and go to state 59
 
 
-State 56
+State 58
 
    19 key_values: key_values COMMA fragment_or_variable EQUALS . fragment
    27 fragment: . fragment_or_variable
-   28         | . SINGLE_QUOTED
-   29         | . DOUBLE_QUOTED
-   30         | . DOLLAR VARIABLE
-   31         | . DOLLAR BEGIN_BRACE expression END_BRACE
-   32 fragment_or_variable: . FRAGMENT
-   33                     | . VARIABLE
+   28         | . number
+   29         | . SINGLE_QUOTED
+   30         | . DOUBLE_QUOTED
+   31         | . DOLLAR VARIABLE
+   32         | . DOLLAR BEGIN_BRACE expression END_BRACE
+   33 number: . NUMBER
+   34 fragment_or_variable: . FRAGMENT
+   35                     | . VARIABLE
 
-    DOLLAR         shift, and go to state 32
-    FRAGMENT       shift, and go to state 4
-    SINGLE_QUOTED  shift, and go to state 5
-    DOUBLE_QUOTED  shift, and go to state 6
-    VARIABLE       shift, and go to state 7
+    DOLLAR         shift, and go to state 34
+    NUMBER         shift, and go to state 4
+    FRAGMENT       shift, and go to state 5
+    SINGLE_QUOTED  shift, and go to state 6
+    DOUBLE_QUOTED  shift, and go to state 7
+    VARIABLE       shift, and go to state 8
 
-    fragment              go to state 58
-    fragment_or_variable  go to state 19
+    fragment              go to state 60
+    number                go to state 20
+    fragment_or_variable  go to state 21
 
 
-State 57
+State 59
 
    17 capture: PERCENT BEGIN_SQUARE key_values END_SQUARE BEGIN_PAREN command END_PAREN .
 
     $default  reduce using rule 17 (capture)
 
 
-State 58
+State 60
 
    19 key_values: key_values COMMA fragment_or_variable EQUALS fragment .
 
