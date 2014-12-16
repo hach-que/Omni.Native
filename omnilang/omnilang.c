@@ -20,6 +20,7 @@ void process_node(zval* output, ast_node* node) {
   array_init(output);
   
   add_assoc_stringl(output, "type", node->node_type->data, node->node_type->slen, 1);
+  add_assoc_stringl(output, "original", node->original->data, node->original->slen, 1);
   switch (node->data_type) {
     case DATA_TYPE_NONE:
       add_assoc_null(output, "data");
@@ -28,13 +29,14 @@ void process_node(zval* output, ast_node* node) {
       add_assoc_null(output, "data");
       break;
     case DATA_TYPE_NUMBER:
-      add_assoc_long(output, "data", node->data.number);
+      add_assoc_long(output, "data", node->data.number.value);
       break;
     case DATA_TYPE_STRING:
-      add_assoc_string(output, "data", node->data.string->data, node->data.string->slen);
+      add_assoc_string(output, "data", node->data.string.value->data, node->data.string.value->slen);
       break;
   }
   
+      
   ALLOC_INIT_ZVAL(arr_children);
   array_init(arr_children);
   list_iterator_start(node->children);

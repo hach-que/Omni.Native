@@ -30,8 +30,9 @@ ast_node* ast_node_create(const_bstring node_type) {
   node = malloc(sizeof(ast_node));
   node->node_type = node_type;
   node->data_type = DATA_TYPE_NONE;
-  node->data.number = 0;
+  node->data.number.value = 0;
   node->children = malloc(sizeof(list_t));
+  node->original = bfromcstr("");
   list_init(node->children);
   return node;
 }
@@ -39,19 +40,19 @@ ast_node* ast_node_create(const_bstring node_type) {
 void ast_node_set_token(ast_node* node, int token) {
   assert(node != NULL);
   node->data_type = DATA_TYPE_TOKEN;
-  node->data.token = token;
+  node->data.token.value = token;
 }
 
 void ast_node_set_number(ast_node* node, int number) {
   assert(node != NULL);
   node->data_type = DATA_TYPE_NUMBER;
-  node->data.number = number;
+  node->data.number.value = number;
 }
 
 void ast_node_set_string(ast_node* node, bstring string) {
   assert(node != NULL);
   node->data_type = DATA_TYPE_STRING;
-  node->data.string = bstrcpy(string);
+  node->data.string.value = bstrcpy(string);
 }
 
 void ast_node_append_child(ast_node* node, ast_node* child) {

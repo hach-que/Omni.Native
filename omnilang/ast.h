@@ -38,6 +38,7 @@ typedef struct
     int data_type;
     YYSTYPE data;
     list_t* children;
+    bstring original;
 } ast_node;
 
 ast_node* ast_node_create(const_bstring node_type);

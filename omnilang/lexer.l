@@ -6,6 +6,8 @@
 #define YYDEBUG 1
 
 #define OD(s) { fprintf(stderr, s "\n"); }
+#define OCOPY(s) { yylval.s.original = bfromcstr(yytext); }
+#define OCAT(s) { bcatcstr(yylval.s.original, yytext); }
 
 %}
 
@@ -23,38 +25,38 @@
 
     /* String handling */
 
-\'                                      { yylval.string = bfromcstr(""); BEGIN(IN_SINGLE_STRING); }
-\"                                      { yylval.string = bfromcstr(""); BEGIN(IN_DOUBLE_STRING); }
-<IN_SINGLE_STRING>[^'\r\n]*             { bcatcstr(yylval.string, yytext); }
-<IN_SINGLE_STRING>\'                    { BEGIN(INITIAL); return SINGLE_QUOTED; }
-<IN_DOUBLE_STRING>[^"\r\n]*             { bcatcstr(yylval.string, yytext); }
-<IN_DOUBLE_STRING>\"                    { BEGIN(INITIAL); return DOUBLE_QUOTED; }
+\'                                      { OCOPY(string); yylval.string.value = bfromcstr(""); BEGIN(IN_SINGLE_STRING); }
+\"                                      { OCOPY(string); yylval.string.value = bfromcstr(""); BEGIN(IN_DOUBLE_STRING); }
+<IN_SINGLE_STRING>[^'\r\n]*             { OCAT(string); bcatcstr(yylval.string.value, yytext); }
+<IN_SINGLE_STRING>\'                    { OCAT(string); BEGIN(INITIAL); return SINGLE_QUOTED; }
+<IN_DOUBLE_STRING>[^"\r\n]*             { OCAT(string); bcatcstr(yylval.string.value, yytext); }
+<IN_DOUBLE_STRING>\"                    { OCAT(string); BEGIN(INITIAL); return DOUBLE_QUOTED; }
 
-pipe                                    { return COMMAND_PIPE; }
+[a-zA-Z_][a-zA-Z_0-9]*                  { OCOPY(string); yylval.string.value = bfromcstr(yytext); return VARIABLE; }
+[a-zA-Z\/_\.\-][a-zA-Z\/_0-9\.\-]*      { OCOPY(string); yylval.string.value = bfromcstr(yytext); return FRAGMENT; }
 
-[a-zA-Z_][a-zA-Z_0-9]*                  { yylval.string = bfromcstr(yytext); return VARIABLE; }
-[a-zA-Z\/_\.\-][a-zA-Z\/_0-9\.\-]*      { yylval.string = bfromcstr(yytext); return FRAGMENT; }
+[0-9]+                                  { OCOPY(number); yylval.number.value = strtoul(yytext, NULL, 10); return NUMBER; }
 
-[0-9]+                                  { yylval.number = strtoul(yytext, NULL, 10); return NUMBER; }
+pipe                                    { OCOPY(token); return COMMAND_PIPE; }
 
-%                                       { return PERCENT; }
-\$                                      { return DOLLAR; }
-[ \t]*\([ \t]*                          { return BEGIN_PAREN; }
-[ \t]*\)[ \t]*                          { return END_PAREN; }
-[ \t]*\{[ \t]*                          { return BEGIN_BRACE; }
-[ \t]*\}[ \t]*                          { return END_BRACE; }
-[ \t]*\[[ \t]*                          { return BEGIN_SQUARE; }
-[ \t]*\][ \t]*                          { return END_SQUARE; }
+%                                       { OCOPY(token); return PERCENT; }
+\$                                      { OCOPY(token); return DOLLAR; }
+[ \t]*\([ \t]*                          { OCOPY(token); return BEGIN_PAREN; }
+[ \t]*\)[ \t]*                          { OCOPY(token); return END_PAREN; }
+[ \t]*\{[ \t]*                          { OCOPY(token); return BEGIN_BRACE; }
+[ \t]*\}[ \t]*                          { OCOPY(token); return END_BRACE; }
+[ \t]*\[[ \t]*                          { OCOPY(token); return BEGIN_SQUARE; }
+[ \t]*\][ \t]*                          { OCOPY(token); return END_SQUARE; }
 
-[ \t]*&[ \t]*                           { return AMPERSAND; }
-[ \t]*\|[ \t]*                          { return PIPE; }
-[ \t]*\=[ \t]*                          { return EQUALS; }
-[ \t]*\,[ \t]*                          { return COMMA; }
-[ \t]*\;[ \t]*                          { return SEMICOLON; }
+[ \t]*&[ \t]*                           { OCOPY(token); return AMPERSAND; }
+[ \t]*\|[ \t]*                          { OCOPY(token); return PIPE; }
+[ \t]*\=[ \t]*                          { OCOPY(token); return EQUALS; }
+[ \t]*\,[ \t]*                          { OCOPY(token); return COMMA; }
+[ \t]*\;[ \t]*                          { OCOPY(token); return SEMICOLON; }
 
-[ \t]+                                  { return WHITESPACE; }
-\\[ \t]*(\r\n|\r|\n)[ \t]*              { return CONTINUING_NEWLINE; }
-[ \t]*(\r\n|\r|\n)[ \t]*                { return TERMINATING_NEWLINE; }
+[ \t]+                                  { OCOPY(token); return WHITESPACE; }
+\\[ \t]*(\r\n|\r|\n)[ \t]*              { OCOPY(token); return CONTINUING_NEWLINE; }
+[ \t]*(\r\n|\r|\n)[ \t]*                { OCOPY(token); return TERMINATING_NEWLINE; }
 
     /* Default rule for unknown characters */
 
