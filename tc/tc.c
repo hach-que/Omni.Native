@@ -25,7 +25,7 @@ PHP_FUNCTION(tc_tcsetpgrp) {
     RETURN_FALSE;
   }
   
-  if (tcsetpgrp(fd, pgid) === 0) {
+  if (tcsetpgrp(fd, pgid) == 0) {
     RETURN_TRUE;
   } else {
     RETURN_FALSE;
