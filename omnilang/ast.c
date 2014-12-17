@@ -20,7 +20,7 @@ struct tagbstring node_type_variable = bsStatic("variable");
 struct tagbstring node_type_assignment = bsStatic("assignment");
 struct tagbstring node_type_key_values = bsStatic("key_values");
 struct tagbstring node_type_key_value = bsStatic("key_value");
-struct tagbstring node_type_pipe_command = bsStatic("pipe_command");
+struct tagbstring node_type_expression = bsStatic("expression");
 
 struct tagbstring pipeline_type_foreground = bsStatic("foreground");
 struct tagbstring pipeline_type_background = bsStatic("background");

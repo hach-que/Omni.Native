@@ -46,7 +46,7 @@ ast_node* ast_root;
 %type <string> fragment_or_variable
 %type <node> root statement pipeline instruction
 %type <node> command arguments fragment fragments
-%type <node> capture assignment pipe_call
+%type <node> capture assignment
 %type <node> key_values expression number
 %type <token> terminator
 
@@ -121,21 +121,6 @@ assignment:
     ORIGINAL_NODE_APPEND($$, $2);
     ORIGINAL_NODE_APPEND($$, $3);
     ORIGINAL_NODE_NODE_APPEND($$, $4);
-  } |
-  DOLLAR VARIABLE EQUALS pipe_call
-  {
-    ast_node* variable;
-    variable = ast_node_create(&node_type_variable);
-    ast_node_set_string(variable, bstrcpy(VALUE($2)));
-    
-    VALUE_NODE($$) = ast_node_create(&node_type_assignment);
-    ast_node_append_child(VALUE_NODE($$), variable);
-    ast_node_append_child(VALUE_NODE($$), VALUE_NODE($4));
-    
-    ORIGINAL_NODE_APPEND($$, $1);
-    ORIGINAL_NODE_APPEND($$, $2);
-    ORIGINAL_NODE_APPEND($$, $3);
-    ORIGINAL_NODE_NODE_APPEND($$, $4);
   } ;
   
 pipeline:
@@ -165,11 +150,7 @@ instruction:
   capture
   {
     $$ = $1;
-  } |
-  pipe_call
-  {
-    $$ = $1;
-  };
+  } ;
   
 capture:
   PERCENT BEGIN_PAREN command END_PAREN
@@ -230,23 +211,6 @@ command:
   {
     $$ = $1;
   };
-  
-pipe_call:
-  COMMAND_PIPE WHITESPACE arguments
-  {
-    VALUE_NODE($$) = ast_node_create(&node_type_pipe_command);
-    ast_node_append_child(VALUE_NODE($$), VALUE_NODE($3));
-    
-    ORIGINAL_NODE_APPEND($$, $1);
-    ORIGINAL_NODE_APPEND($$, $2);
-    ORIGINAL_NODE_NODE_APPEND($$, $3);
-  } |
-  COMMAND_PIPE
-  {
-    VALUE_NODE($$) = ast_node_create(&node_type_pipe_command);
-    
-    ORIGINAL_NODE_APPEND($$, $1);
-  } ;
 
 arguments:
   fragments
@@ -313,9 +277,10 @@ fragment:
     ORIGINAL_NODE_APPEND($$, $1);
     ORIGINAL_NODE_APPEND($$, $2);
   } |
-  DOLLAR BEGIN_BRACE expression END_BRACE
+  DOLLAR BEGIN_PAREN expression END_PAREN
   {
-    VALUE_NODE($$) = VALUE_NODE($3);
+    VALUE_NODE($$) = ast_node_create(&node_type_expression);
+    ast_node_append_child(VALUE_NODE($$), VALUE_NODE($3));
     
     ORIGINAL_NODE_APPEND($$, $1);
     ORIGINAL_NODE_APPEND($$, $2);
@@ -337,7 +302,7 @@ fragment_or_variable:
   VARIABLE { $$ = $1; } ;
   
 expression:
-  fragment
+  pipeline
   {
     $$ = $1;
   };

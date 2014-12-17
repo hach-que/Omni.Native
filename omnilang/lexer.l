@@ -37,8 +37,6 @@
 
 [0-9]+                                  { OCOPY(number); yylval.number.value = strtoul(yytext, NULL, 10); return NUMBER; }
 
-pipe                                    { OCOPY(token); return COMMAND_PIPE; }
-
 %                                       { OCOPY(token); return PERCENT; }
 \$                                      { OCOPY(token); return DOLLAR; }
 [ \t]*\([ \t]*                          { OCOPY(token); return BEGIN_PAREN; }

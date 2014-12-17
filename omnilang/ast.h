@@ -27,7 +27,7 @@ extern struct tagbstring node_type_variable;
 extern struct tagbstring node_type_assignment;
 extern struct tagbstring node_type_key_values;
 extern struct tagbstring node_type_key_value;
-extern struct tagbstring node_type_pipe_command;
+extern struct tagbstring node_type_expression;
 
 extern struct tagbstring pipeline_type_foreground;
 extern struct tagbstring pipeline_type_background;
