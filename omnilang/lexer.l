@@ -33,7 +33,7 @@
 <IN_DOUBLE_STRING>\"                    { OCAT(string); BEGIN(INITIAL); return DOUBLE_QUOTED; }
 
 [a-zA-Z_][a-zA-Z_0-9]*                  { OCOPY(string); yylval.string.value = bfromcstr(yytext); return VARIABLE; }
-[a-zA-Z\/_\.\-][a-zA-Z\/_0-9\.\-]*      { OCOPY(string); yylval.string.value = bfromcstr(yytext); return FRAGMENT; }
+[a-zA-Z\/_\.\-\~][a-zA-Z\/_0-9\.\-\~]*  { OCOPY(string); yylval.string.value = bfromcstr(yytext); return FRAGMENT; }
 
 [0-9]+                                  { OCOPY(number); yylval.number.value = strtoul(yytext, NULL, 10); return NUMBER; }
 
