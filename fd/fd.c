@@ -3,6 +3,12 @@
 #include <stdio.h>
 #include <phpmodule.h>
 #include <fcntl.h>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <sys/uio.h>
+#include <errno.h>
+#include <stddef.h>
+#include <ancillary.h>
 
 // Get the original functionality back after PHP overrides it.
 #ifdef snprintf
@@ -283,6 +289,58 @@ PHP_FUNCTION(fd_get_error) {
   efree(buffer);
 }
 
+PHP_FUNCTION(fd_control_pipe) {
+  int endpoint[2];
+  
+  TRACE_FUNCTION_CALL();
+  
+  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "") == FAILURE) {
+    RETURN_FALSE;
+  }
+  
+  if (socketpair(PF_UNIX, SOCK_STREAM, 0, endpoint) < 0) {
+    RETURN_FALSE;
+  }
+  
+  array_init(return_value);
+  add_assoc_long(return_value, "read", endpoint[0]);
+  add_assoc_long(return_value, "write", endpoint[1]);
+}
+
+PHP_FUNCTION(fd_control_writefd) {
+  long pipe_fd;
+  long fd_to_send;
+  
+  TRACE_FUNCTION_CALL();
+  
+  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "ll", &pipe_fd, &fd_to_send) == FAILURE) {
+    RETURN_FALSE;
+  }
+  
+  if (ancil_send_fd(pipe_fd, fd_to_send) < 0) {
+    RETURN_FALSE;
+  } else {
+    RETURN_TRUE;
+  }
+}
+
+PHP_FUNCTION(fd_control_readfd) {
+  long pipe_fd;
+  int fd_to_recv;
+  
+  TRACE_FUNCTION_CALL();
+  
+  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "l", &pipe_fd) == FAILURE) {
+    RETURN_FALSE;
+  }
+  
+  if (ancil_recv_fd(pipe_fd, &fd_to_recv) < 0) {
+    RETURN_FALSE;
+  } else {
+    RETURN_LONG(fd_to_recv);
+  }
+}
+
 PHP_MODULE(fd, 
   PHP_FE(fd_select, NULL)
   PHP_FE(fd_read, NULL)
@@ -292,4 +350,7 @@ PHP_MODULE(fd,
   PHP_FE(fd_pipe, NULL)
   PHP_FE(fd_set_blocking, NULL)
   PHP_FE(fd_get_error, NULL)
+  PHP_FE(fd_control_pipe, NULL)
+  PHP_FE(fd_control_writefd, NULL)
+  PHP_FE(fd_control_readfd, NULL)
 )

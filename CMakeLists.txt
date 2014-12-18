@@ -57,6 +57,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
 
 add_subdirectory(third-party/bstring)
 add_subdirectory(third-party/simclist)
+add_subdirectory(third-party/libancillary)
 add_subdirectory(common)
 add_subdirectory(omnilang)
 add_subdirectory(omni)
