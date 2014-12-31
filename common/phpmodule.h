@@ -41,5 +41,5 @@ zend_module_entry name ## _module_entry = { \
 #include <unistd.h>
 
 //#define TRACE_FUNCTION_CALL() printf("%d: native call: %s\n", getpid(), __func__);
-#define TRACE_CUSTOM(msg, ...) { if (_tracing_enabled) { printf("%d: native call: " #msg "\n", getpid(), __VA_ARGS__); } }
+#define TRACE_CUSTOM(msg, ...) { if (_tracing_enabled) { fprintf(stderr, "%d: native call: " #msg "\n", getpid(), __VA_ARGS__); } }
 #define TRACE_FUNCTION_CALL()
