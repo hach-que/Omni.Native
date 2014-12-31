@@ -21,9 +21,16 @@ struct tagbstring node_type_assignment = bsStatic("assignment");
 struct tagbstring node_type_key_values = bsStatic("key_values");
 struct tagbstring node_type_key_value = bsStatic("key_value");
 struct tagbstring node_type_expression = bsStatic("expression");
+struct tagbstring node_type_access = bsStatic("access");
+struct tagbstring node_type_invocation = bsStatic("invocation");
+struct tagbstring node_type_divide = bsStatic("divide");
+struct tagbstring node_type_multiply = bsStatic("multiply");
+struct tagbstring node_type_add = bsStatic("add");
+struct tagbstring node_type_minus = bsStatic("minus");
 
 struct tagbstring pipeline_type_foreground = bsStatic("foreground");
 struct tagbstring pipeline_type_background = bsStatic("background");
+struct tagbstring pipeline_type_expression = bsStatic("expression");
 
 ast_node* ast_node_create(const_bstring node_type) {
   ast_node* node;

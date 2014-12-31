@@ -28,9 +28,16 @@ extern struct tagbstring node_type_assignment;
 extern struct tagbstring node_type_key_values;
 extern struct tagbstring node_type_key_value;
 extern struct tagbstring node_type_expression;
+extern struct tagbstring node_type_access;
+extern struct tagbstring node_type_invocation;
+extern struct tagbstring node_type_divide;
+extern struct tagbstring node_type_multiply;
+extern struct tagbstring node_type_add;
+extern struct tagbstring node_type_minus;
 
 extern struct tagbstring pipeline_type_foreground;
 extern struct tagbstring pipeline_type_background;
+extern struct tagbstring pipeline_type_expression;
 
 typedef struct 
 {
