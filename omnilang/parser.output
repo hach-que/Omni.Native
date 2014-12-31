@@ -2,8 +2,6 @@ Terminals unused in grammar
 
    TOKEN
    CONTINUING_NEWLINE
-   BEGIN_BRACE
-   END_BRACE
    COMMAND_PIPE
    ERROR
    MAP
@@ -13,63 +11,82 @@ Grammar
 
     0 $accept: root $end
 
-    1 root: statement
-    2     | root terminator statement
+    1 root: statements
 
-    3 terminator: TERMINATING_NEWLINE
-    4           | SEMICOLON
+    2 statements: statement
+    3           | statements terminator statement
 
-    5 statement: pipeline AMPERSAND
-    6          | pipeline
-    7          | assignment
-    8          | /* empty */
+    4 terminator: TERMINATING_NEWLINE
+    5           | SEMICOLON
 
-    9 assignment: DOLLAR VARIABLE EQUALS fragments
+    6 optional_whitespace: /* empty */
+    7                    | WHITESPACE
+    8                    | TERMINATING_NEWLINE
 
-   10 pipeline: instruction
-   11         | pipeline PIPE instruction
+    9 statement: pipeline AMPERSAND
+   10          | pipeline
+   11          | assignment
+   12          | KEYWORD_IF optional_whitespace fragment optional_whitespace BEGIN_BRACE statements END_BRACE KEYWORD_ELSE BEGIN_BRACE statements END_BRACE
+   13          | KEYWORD_IF optional_whitespace fragment optional_whitespace BEGIN_BRACE statements END_BRACE
+   14          | /* empty */
 
-   12 instruction: command
-   13            | capture
+   15 assignment: DOLLAR VARIABLE EQUALS fragments
 
-   14 capture: PERCENT BEGIN_PAREN command END_PAREN
-   15        | PERCENT BEGIN_SQUARE key_values END_SQUARE BEGIN_PAREN command END_PAREN
+   16 pipeline: instruction
+   17         | pipeline PIPE instruction
 
-   16 key_values: fragment_or_variable EQUALS fragment
-   17           | key_values COMMA fragment_or_variable EQUALS fragment
+   18 instruction: command
+   19            | capture
 
-   18 command: arguments
+   20 capture: PERCENT BEGIN_PAREN command END_PAREN
+   21        | PERCENT BEGIN_SQUARE key_values END_SQUARE BEGIN_PAREN command END_PAREN
 
-   19 arguments: fragments
-   20          | arguments WHITESPACE fragments
+   22 key_values: fragment_or_variable EQUALS fragment
+   23           | key_values COMMA fragment_or_variable EQUALS fragment
 
-   21 fragments: fragment
-   22          | fragments fragment
+   24 command: arguments
 
-   23 fragment: fragment_or_variable
-   24         | number
-   25         | MINUS
-   26         | SINGLE_QUOTED
-   27         | DOUBLE_QUOTED
-   28         | DOLLAR VARIABLE
-   29         | DOLLAR BEGIN_PAREN pipeline END_PAREN
-   30         | BEGIN_PAREN expression END_PAREN
+   25 arguments: fragments
+   26          | arguments WHITESPACE fragments
 
-   31 number: NUMBER
+   27 fragments: fragment
+   28          | fragments fragment
+   29          | fragments keyword_as_string
 
-   32 fragment_or_variable: FRAGMENT
-   33                     | VARIABLE
+   30 fragment: fragment_or_variable
+   31         | number
+   32         | MINUS
+   33         | SINGLE_QUOTED
+   34         | DOUBLE_QUOTED
+   35         | DOLLAR VARIABLE
+   36         | DOLLAR NUMBER
+   37         | DOLLAR BEGIN_PAREN pipeline END_PAREN
+   38         | BEGIN_PAREN expression END_PAREN
 
-   34 expression: fragment
-   35           | expression ACCESS expression
-   36           | expression BEGIN_PAREN comma_arguments END_PAREN
-   37           | expression DIVIDE expression
-   38           | expression MULTIPLY expression
-   39           | expression ADD expression
-   40           | expression MINUS expression
+   39 number: NUMBER
 
-   41 comma_arguments: fragments
-   42                | comma_arguments COMMA fragments
+   40 keyword_as_string: KEYWORD_IF
+   41                  | KEYWORD_ELSE
+   42                  | KEYWORD_WHILE
+   43                  | KEYWORD_FOR
+   44                  | KEYWORD_FOREACH
+   45                  | KEYWORD_DO
+   46                  | KEYWORD_BREAK
+   47                  | KEYWORD_CONTINUE
+
+   48 fragment_or_variable: FRAGMENT
+   49                     | VARIABLE
+
+   50 expression: fragment
+   51           | expression ACCESS expression
+   52           | expression BEGIN_PAREN comma_arguments END_PAREN
+   53           | expression DIVIDE expression
+   54           | expression MULTIPLY expression
+   55           | expression ADD expression
+   56           | expression WHITESPACE MINUS expression
+
+   57 comma_arguments: fragments
+   58                | comma_arguments COMMA fragments
 
 
 Terminals, with rules where they appear
@@ -77,1431 +94,1933 @@ Terminals, with rules where they appear
 $end (0) 0
 error (256)
 TOKEN (258)
-WHITESPACE (259) 20
+WHITESPACE (259) 7 26 56
 CONTINUING_NEWLINE (260)
-TERMINATING_NEWLINE (261) 3
-PIPE (262) 11
-PERCENT (263) 14 15
-DOLLAR (264) 9 28 29
-BEGIN_PAREN (265) 14 15 29 30 36
-END_PAREN (266) 14 15 29 30 36
-EQUALS (267) 9 16 17
-BEGIN_SQUARE (268) 15
-END_SQUARE (269) 15
-BEGIN_BRACE (270)
-END_BRACE (271)
-COMMA (272) 17 42
+TERMINATING_NEWLINE (261) 4 8
+PIPE (262) 17
+PERCENT (263) 20 21
+DOLLAR (264) 15 35 36 37
+BEGIN_PAREN (265) 20 21 37 38 52
+END_PAREN (266) 20 21 37 38 52
+EQUALS (267) 15 22 23
+BEGIN_SQUARE (268) 21
+END_SQUARE (269) 21
+BEGIN_BRACE (270) 12 13
+END_BRACE (271) 12 13
+COMMA (272) 23 58
 COMMAND_PIPE (273)
-SEMICOLON (274) 4
-AMPERSAND (275) 5
+SEMICOLON (274) 5
+AMPERSAND (275) 9
 ERROR (276)
-ACCESS (277) 35
+ACCESS (277) 51
 MAP (278)
-MINUS (279) 25 40
-ADD (280) 39
-MULTIPLY (281) 38
-DIVIDE (282) 37
-NUMBER (283) 31
-FRAGMENT (284) 32
-SINGLE_QUOTED (285) 26
-DOUBLE_QUOTED (286) 27
-VARIABLE (287) 9 28 33
+MINUS (279) 32 56
+ADD (280) 55
+MULTIPLY (281) 54
+DIVIDE (282) 53
+KEYWORD_WHILE (283) 42
+KEYWORD_DO (284) 45
+KEYWORD_FOR (285) 43
+KEYWORD_FOREACH (286) 44
+KEYWORD_BREAK (287) 46
+KEYWORD_CONTINUE (288) 47
+KEYWORD_IF (289) 12 13 40
+KEYWORD_ELSE (290) 12 41
+NUMBER (291) 36 39
+FRAGMENT (292) 48
+SINGLE_QUOTED (293) 33
+DOUBLE_QUOTED (294) 34
+VARIABLE (295) 15 35 49
 
 
 Nonterminals, with rules where they appear
 
-$accept (33)
+$accept (41)
     on left: 0
-root (34)
-    on left: 1 2, on right: 0 2
-terminator (35)
-    on left: 3 4, on right: 2
-statement (36)
-    on left: 5 6 7 8, on right: 1 2
-assignment (37)
-    on left: 9, on right: 7
-pipeline (38)
-    on left: 10 11, on right: 5 6 11 29
-instruction (39)
-    on left: 12 13, on right: 10 11
-capture (40)
-    on left: 14 15, on right: 13
-key_values (41)
-    on left: 16 17, on right: 15 17
-command (42)
-    on left: 18, on right: 12 14 15
-arguments (43)
-    on left: 19 20, on right: 18 20
-fragments (44)
-    on left: 21 22, on right: 9 19 20 22 41 42
-fragment (45)
-    on left: 23 24 25 26 27 28 29 30, on right: 16 17 21 22 34
-number (46)
-    on left: 31, on right: 24
-fragment_or_variable (47)
-    on left: 32 33, on right: 16 17 23
-expression (48)
-    on left: 34 35 36 37 38 39 40, on right: 30 35 36 37 38 39 40
-comma_arguments (49)
-    on left: 41 42, on right: 36 42
+root (42)
+    on left: 1, on right: 0
+statements (43)
+    on left: 2 3, on right: 1 3 12 13
+terminator (44)
+    on left: 4 5, on right: 3
+optional_whitespace (45)
+    on left: 6 7 8, on right: 12 13
+statement (46)
+    on left: 9 10 11 12 13 14, on right: 2 3
+assignment (47)
+    on left: 15, on right: 11
+pipeline (48)
+    on left: 16 17, on right: 9 10 17 37
+instruction (49)
+    on left: 18 19, on right: 16 17
+capture (50)
+    on left: 20 21, on right: 19
+key_values (51)
+    on left: 22 23, on right: 21 23
+command (52)
+    on left: 24, on right: 18 20 21
+arguments (53)
+    on left: 25 26, on right: 24 26
+fragments (54)
+    on left: 27 28 29, on right: 15 25 26 28 29 57 58
+fragment (55)
+    on left: 30 31 32 33 34 35 36 37 38, on right: 12 13 22 23 27 28
+    50
+number (56)
+    on left: 39, on right: 31
+keyword_as_string (57)
+    on left: 40 41 42 43 44 45 46 47, on right: 29
+fragment_or_variable (58)
+    on left: 48 49, on right: 22 23 30
+expression (59)
+    on left: 50 51 52 53 54 55 56, on right: 38 51 52 53 54 55 56
+comma_arguments (60)
+    on left: 57 58, on right: 52 58
 
 
 State 0
 
     0 $accept: . root $end
-    1 root: . statement
-    2     | . root terminator statement
-    5 statement: . pipeline AMPERSAND
-    6          | . pipeline
-    7          | . assignment
-    8          | .  [$end, TERMINATING_NEWLINE, SEMICOLON]
-    9 assignment: . DOLLAR VARIABLE EQUALS fragments
-   10 pipeline: . instruction
-   11         | . pipeline PIPE instruction
-   12 instruction: . command
-   13            | . capture
-   14 capture: . PERCENT BEGIN_PAREN command END_PAREN
-   15        | . PERCENT BEGIN_SQUARE key_values END_SQUARE BEGIN_PAREN command END_PAREN
-   18 command: . arguments
-   19 arguments: . fragments
-   20          | . arguments WHITESPACE fragments
-   21 fragments: . fragment
-   22          | . fragments fragment
-   23 fragment: . fragment_or_variable
-   24         | . number
-   25         | . MINUS
-   26         | . SINGLE_QUOTED
-   27         | . DOUBLE_QUOTED
-   28         | . DOLLAR VARIABLE
-   29         | . DOLLAR BEGIN_PAREN pipeline END_PAREN
-   30         | . BEGIN_PAREN expression END_PAREN
-   31 number: . NUMBER
-   32 fragment_or_variable: . FRAGMENT
-   33                     | . VARIABLE
+    1 root: . statements
+    2 statements: . statement
+    3           | . statements terminator statement
+    9 statement: . pipeline AMPERSAND
+   10          | . pipeline
+   11          | . assignment
+   12          | . KEYWORD_IF optional_whitespace fragment optional_whitespace BEGIN_BRACE statements END_BRACE KEYWORD_ELSE BEGIN_BRACE statements END_BRACE
+   13          | . KEYWORD_IF optional_whitespace fragment optional_whitespace BEGIN_BRACE statements END_BRACE
+   14          | .  [$end, TERMINATING_NEWLINE, SEMICOLON]
+   15 assignment: . DOLLAR VARIABLE EQUALS fragments
+   16 pipeline: . instruction
+   17         | . pipeline PIPE instruction
+   18 instruction: . command
+   19            | . capture
+   20 capture: . PERCENT BEGIN_PAREN command END_PAREN
+   21        | . PERCENT BEGIN_SQUARE key_values END_SQUARE BEGIN_PAREN command END_PAREN
+   24 command: . arguments
+   25 arguments: . fragments
+   26          | . arguments WHITESPACE fragments
+   27 fragments: . fragment
+   28          | . fragments fragment
+   29          | . fragments keyword_as_string
+   30 fragment: . fragment_or_variable
+   31         | . number
+   32         | . MINUS
+   33         | . SINGLE_QUOTED
+   34         | . DOUBLE_QUOTED
+   35         | . DOLLAR VARIABLE
+   36         | . DOLLAR NUMBER
+   37         | . DOLLAR BEGIN_PAREN pipeline END_PAREN
+   38         | . BEGIN_PAREN expression END_PAREN
+   39 number: . NUMBER
+   48 fragment_or_variable: . FRAGMENT
+   49                     | . VARIABLE
 
     PERCENT        shift, and go to state 1
     DOLLAR         shift, and go to state 2
     BEGIN_PAREN    shift, and go to state 3
     MINUS          shift, and go to state 4
-    NUMBER         shift, and go to state 5
-    FRAGMENT       shift, and go to state 6
-    SINGLE_QUOTED  shift, and go to state 7
-    DOUBLE_QUOTED  shift, and go to state 8
-    VARIABLE       shift, and go to state 9
+    KEYWORD_IF     shift, and go to state 5
+    NUMBER         shift, and go to state 6
+    FRAGMENT       shift, and go to state 7
+    SINGLE_QUOTED  shift, and go to state 8
+    DOUBLE_QUOTED  shift, and go to state 9
+    VARIABLE       shift, and go to state 10
 
-    $default  reduce using rule 8 (statement)
+    $default  reduce using rule 14 (statement)
 
-    root                  go to state 10
-    statement             go to state 11
-    assignment            go to state 12
-    pipeline              go to state 13
-    instruction           go to state 14
-    capture               go to state 15
-    command               go to state 16
-    arguments             go to state 17
-    fragments             go to state 18
-    fragment              go to state 19
-    number                go to state 20
-    fragment_or_variable  go to state 21
+    root                  go to state 11
+    statements            go to state 12
+    statement             go to state 13
+    assignment            go to state 14
+    pipeline              go to state 15
+    instruction           go to state 16
+    capture               go to state 17
+    command               go to state 18
+    arguments             go to state 19
+    fragments             go to state 20
+    fragment              go to state 21
+    number                go to state 22
+    fragment_or_variable  go to state 23
 
 
 State 1
 
-   14 capture: PERCENT . BEGIN_PAREN command END_PAREN
-   15        | PERCENT . BEGIN_SQUARE key_values END_SQUARE BEGIN_PAREN command END_PAREN
+   20 capture: PERCENT . BEGIN_PAREN command END_PAREN
+   21        | PERCENT . BEGIN_SQUARE key_values END_SQUARE BEGIN_PAREN command END_PAREN
 
-    BEGIN_PAREN   shift, and go to state 22
-    BEGIN_SQUARE  shift, and go to state 23
+    BEGIN_PAREN   shift, and go to state 24
+    BEGIN_SQUARE  shift, and go to state 25
 
 
 State 2
 
-    9 assignment: DOLLAR . VARIABLE EQUALS fragments
-   28 fragment: DOLLAR . VARIABLE
-   29         | DOLLAR . BEGIN_PAREN pipeline END_PAREN
+   15 assignment: DOLLAR . VARIABLE EQUALS fragments
+   35 fragment: DOLLAR . VARIABLE
+   36         | DOLLAR . NUMBER
+   37         | DOLLAR . BEGIN_PAREN pipeline END_PAREN
 
-    BEGIN_PAREN  shift, and go to state 24
-    VARIABLE     shift, and go to state 25
+    BEGIN_PAREN  shift, and go to state 26
+    NUMBER       shift, and go to state 27
+    VARIABLE     shift, and go to state 28
 
 
 State 3
 
-   23 fragment: . fragment_or_variable
-   24         | . number
-   25         | . MINUS
-   26         | . SINGLE_QUOTED
-   27         | . DOUBLE_QUOTED
-   28         | . DOLLAR VARIABLE
-   29         | . DOLLAR BEGIN_PAREN pipeline END_PAREN
-   30         | . BEGIN_PAREN expression END_PAREN
-   30         | BEGIN_PAREN . expression END_PAREN
-   31 number: . NUMBER
-   32 fragment_or_variable: . FRAGMENT
-   33                     | . VARIABLE
-   34 expression: . fragment
-   35           | . expression ACCESS expression
-   36           | . expression BEGIN_PAREN comma_arguments END_PAREN
-   37           | . expression DIVIDE expression
-   38           | . expression MULTIPLY expression
-   39           | . expression ADD expression
-   40           | . expression MINUS expression
+   30 fragment: . fragment_or_variable
+   31         | . number
+   32         | . MINUS
+   33         | . SINGLE_QUOTED
+   34         | . DOUBLE_QUOTED
+   35         | . DOLLAR VARIABLE
+   36         | . DOLLAR NUMBER
+   37         | . DOLLAR BEGIN_PAREN pipeline END_PAREN
+   38         | . BEGIN_PAREN expression END_PAREN
+   38         | BEGIN_PAREN . expression END_PAREN
+   39 number: . NUMBER
+   48 fragment_or_variable: . FRAGMENT
+   49                     | . VARIABLE
+   50 expression: . fragment
+   51           | . expression ACCESS expression
+   52           | . expression BEGIN_PAREN comma_arguments END_PAREN
+   53           | . expression DIVIDE expression
+   54           | . expression MULTIPLY expression
+   55           | . expression ADD expression
+   56           | . expression WHITESPACE MINUS expression
 
-    DOLLAR         shift, and go to state 26
+    DOLLAR         shift, and go to state 29
     BEGIN_PAREN    shift, and go to state 3
     MINUS          shift, and go to state 4
-    NUMBER         shift, and go to state 5
-    FRAGMENT       shift, and go to state 6
-    SINGLE_QUOTED  shift, and go to state 7
-    DOUBLE_QUOTED  shift, and go to state 8
-    VARIABLE       shift, and go to state 9
+    NUMBER         shift, and go to state 6
+    FRAGMENT       shift, and go to state 7
+    SINGLE_QUOTED  shift, and go to state 8
+    DOUBLE_QUOTED  shift, and go to state 9
+    VARIABLE       shift, and go to state 10
 
-    fragment              go to state 27
-    number                go to state 20
-    fragment_or_variable  go to state 21
-    expression            go to state 28
+    fragment              go to state 30
+    number                go to state 22
+    fragment_or_variable  go to state 23
+    expression            go to state 31
 
 
 State 4
 
-   25 fragment: MINUS .
+   32 fragment: MINUS .
 
-    $default  reduce using rule 25 (fragment)
+    $default  reduce using rule 32 (fragment)
 
 
 State 5
 
-   31 number: NUMBER .
+    6 optional_whitespace: .  [DOLLAR, BEGIN_PAREN, MINUS, NUMBER, FRAGMENT, SINGLE_QUOTED, DOUBLE_QUOTED, VARIABLE]
+    7                    | . WHITESPACE
+    8                    | . TERMINATING_NEWLINE
+   12 statement: KEYWORD_IF . optional_whitespace fragment optional_whitespace BEGIN_BRACE statements END_BRACE KEYWORD_ELSE BEGIN_BRACE statements END_BRACE
+   13          | KEYWORD_IF . optional_whitespace fragment optional_whitespace BEGIN_BRACE statements END_BRACE
 
-    $default  reduce using rule 31 (number)
+    WHITESPACE           shift, and go to state 32
+    TERMINATING_NEWLINE  shift, and go to state 33
+
+    $default  reduce using rule 6 (optional_whitespace)
+
+    optional_whitespace  go to state 34
 
 
 State 6
 
-   32 fragment_or_variable: FRAGMENT .
+   39 number: NUMBER .
 
-    $default  reduce using rule 32 (fragment_or_variable)
+    $default  reduce using rule 39 (number)
 
 
 State 7
 
-   26 fragment: SINGLE_QUOTED .
+   48 fragment_or_variable: FRAGMENT .
 
-    $default  reduce using rule 26 (fragment)
+    $default  reduce using rule 48 (fragment_or_variable)
 
 
 State 8
 
-   27 fragment: DOUBLE_QUOTED .
+   33 fragment: SINGLE_QUOTED .
 
-    $default  reduce using rule 27 (fragment)
+    $default  reduce using rule 33 (fragment)
 
 
 State 9
 
-   33 fragment_or_variable: VARIABLE .
+   34 fragment: DOUBLE_QUOTED .
 
-    $default  reduce using rule 33 (fragment_or_variable)
+    $default  reduce using rule 34 (fragment)
 
 
 State 10
 
-    0 $accept: root . $end
-    2 root: root . terminator statement
-    3 terminator: . TERMINATING_NEWLINE
-    4           | . SEMICOLON
+   49 fragment_or_variable: VARIABLE .
 
-    $end                 shift, and go to state 29
-    TERMINATING_NEWLINE  shift, and go to state 30
-    SEMICOLON            shift, and go to state 31
-
-    terminator  go to state 32
+    $default  reduce using rule 49 (fragment_or_variable)
 
 
 State 11
 
-    1 root: statement .
+    0 $accept: root . $end
 
-    $default  reduce using rule 1 (root)
+    $end  shift, and go to state 35
 
 
 State 12
 
-    7 statement: assignment .
+    1 root: statements .  [$end]
+    3 statements: statements . terminator statement
+    4 terminator: . TERMINATING_NEWLINE
+    5           | . SEMICOLON
 
-    $default  reduce using rule 7 (statement)
+    TERMINATING_NEWLINE  shift, and go to state 36
+    SEMICOLON            shift, and go to state 37
+
+    $default  reduce using rule 1 (root)
+
+    terminator  go to state 38
 
 
 State 13
 
-    5 statement: pipeline . AMPERSAND
-    6          | pipeline .  [$end, TERMINATING_NEWLINE, SEMICOLON]
-   11 pipeline: pipeline . PIPE instruction
+    2 statements: statement .
 
-    PIPE       shift, and go to state 33
-    AMPERSAND  shift, and go to state 34
-
-    $default  reduce using rule 6 (statement)
+    $default  reduce using rule 2 (statements)
 
 
 State 14
 
-   10 pipeline: instruction .
+   11 statement: assignment .
 
-    $default  reduce using rule 10 (pipeline)
+    $default  reduce using rule 11 (statement)
 
 
 State 15
 
-   13 instruction: capture .
+    9 statement: pipeline . AMPERSAND
+   10          | pipeline .  [$end, TERMINATING_NEWLINE, END_BRACE, SEMICOLON]
+   17 pipeline: pipeline . PIPE instruction
 
-    $default  reduce using rule 13 (instruction)
+    PIPE       shift, and go to state 39
+    AMPERSAND  shift, and go to state 40
+
+    $default  reduce using rule 10 (statement)
 
 
 State 16
 
-   12 instruction: command .
+   16 pipeline: instruction .
 
-    $default  reduce using rule 12 (instruction)
+    $default  reduce using rule 16 (pipeline)
 
 
 State 17
 
-   18 command: arguments .  [$end, TERMINATING_NEWLINE, PIPE, END_PAREN, SEMICOLON, AMPERSAND]
-   20 arguments: arguments . WHITESPACE fragments
+   19 instruction: capture .
 
-    WHITESPACE  shift, and go to state 35
-
-    $default  reduce using rule 18 (command)
+    $default  reduce using rule 19 (instruction)
 
 
 State 18
 
-   19 arguments: fragments .  [$end, WHITESPACE, TERMINATING_NEWLINE, PIPE, END_PAREN, SEMICOLON, AMPERSAND]
-   22 fragments: fragments . fragment
-   23 fragment: . fragment_or_variable
-   24         | . number
-   25         | . MINUS
-   26         | . SINGLE_QUOTED
-   27         | . DOUBLE_QUOTED
-   28         | . DOLLAR VARIABLE
-   29         | . DOLLAR BEGIN_PAREN pipeline END_PAREN
-   30         | . BEGIN_PAREN expression END_PAREN
-   31 number: . NUMBER
-   32 fragment_or_variable: . FRAGMENT
-   33                     | . VARIABLE
+   18 instruction: command .
 
-    DOLLAR         shift, and go to state 26
-    BEGIN_PAREN    shift, and go to state 3
-    MINUS          shift, and go to state 4
-    NUMBER         shift, and go to state 5
-    FRAGMENT       shift, and go to state 6
-    SINGLE_QUOTED  shift, and go to state 7
-    DOUBLE_QUOTED  shift, and go to state 8
-    VARIABLE       shift, and go to state 9
-
-    $default  reduce using rule 19 (arguments)
-
-    fragment              go to state 36
-    number                go to state 20
-    fragment_or_variable  go to state 21
+    $default  reduce using rule 18 (instruction)
 
 
 State 19
 
-   21 fragments: fragment .
+   24 command: arguments .  [$end, TERMINATING_NEWLINE, PIPE, END_PAREN, END_BRACE, SEMICOLON, AMPERSAND]
+   26 arguments: arguments . WHITESPACE fragments
 
-    $default  reduce using rule 21 (fragments)
+    WHITESPACE  shift, and go to state 41
+
+    $default  reduce using rule 24 (command)
 
 
 State 20
 
-   24 fragment: number .
+   25 arguments: fragments .  [$end, WHITESPACE, TERMINATING_NEWLINE, PIPE, END_PAREN, END_BRACE, SEMICOLON, AMPERSAND]
+   28 fragments: fragments . fragment
+   29          | fragments . keyword_as_string
+   30 fragment: . fragment_or_variable
+   31         | . number
+   32         | . MINUS
+   33         | . SINGLE_QUOTED
+   34         | . DOUBLE_QUOTED
+   35         | . DOLLAR VARIABLE
+   36         | . DOLLAR NUMBER
+   37         | . DOLLAR BEGIN_PAREN pipeline END_PAREN
+   38         | . BEGIN_PAREN expression END_PAREN
+   39 number: . NUMBER
+   40 keyword_as_string: . KEYWORD_IF
+   41                  | . KEYWORD_ELSE
+   42                  | . KEYWORD_WHILE
+   43                  | . KEYWORD_FOR
+   44                  | . KEYWORD_FOREACH
+   45                  | . KEYWORD_DO
+   46                  | . KEYWORD_BREAK
+   47                  | . KEYWORD_CONTINUE
+   48 fragment_or_variable: . FRAGMENT
+   49                     | . VARIABLE
 
-    $default  reduce using rule 24 (fragment)
+    DOLLAR            shift, and go to state 29
+    BEGIN_PAREN       shift, and go to state 3
+    MINUS             shift, and go to state 4
+    KEYWORD_WHILE     shift, and go to state 42
+    KEYWORD_DO        shift, and go to state 43
+    KEYWORD_FOR       shift, and go to state 44
+    KEYWORD_FOREACH   shift, and go to state 45
+    KEYWORD_BREAK     shift, and go to state 46
+    KEYWORD_CONTINUE  shift, and go to state 47
+    KEYWORD_IF        shift, and go to state 48
+    KEYWORD_ELSE      shift, and go to state 49
+    NUMBER            shift, and go to state 6
+    FRAGMENT          shift, and go to state 7
+    SINGLE_QUOTED     shift, and go to state 8
+    DOUBLE_QUOTED     shift, and go to state 9
+    VARIABLE          shift, and go to state 10
+
+    $default  reduce using rule 25 (arguments)
+
+    fragment              go to state 50
+    number                go to state 22
+    keyword_as_string     go to state 51
+    fragment_or_variable  go to state 23
 
 
 State 21
 
-   23 fragment: fragment_or_variable .
+   27 fragments: fragment .
 
-    $default  reduce using rule 23 (fragment)
+    $default  reduce using rule 27 (fragments)
 
 
 State 22
 
-   14 capture: PERCENT BEGIN_PAREN . command END_PAREN
-   18 command: . arguments
-   19 arguments: . fragments
-   20          | . arguments WHITESPACE fragments
-   21 fragments: . fragment
-   22          | . fragments fragment
-   23 fragment: . fragment_or_variable
-   24         | . number
-   25         | . MINUS
-   26         | . SINGLE_QUOTED
-   27         | . DOUBLE_QUOTED
-   28         | . DOLLAR VARIABLE
-   29         | . DOLLAR BEGIN_PAREN pipeline END_PAREN
-   30         | . BEGIN_PAREN expression END_PAREN
-   31 number: . NUMBER
-   32 fragment_or_variable: . FRAGMENT
-   33                     | . VARIABLE
+   31 fragment: number .
 
-    DOLLAR         shift, and go to state 26
-    BEGIN_PAREN    shift, and go to state 3
-    MINUS          shift, and go to state 4
-    NUMBER         shift, and go to state 5
-    FRAGMENT       shift, and go to state 6
-    SINGLE_QUOTED  shift, and go to state 7
-    DOUBLE_QUOTED  shift, and go to state 8
-    VARIABLE       shift, and go to state 9
-
-    command               go to state 37
-    arguments             go to state 17
-    fragments             go to state 18
-    fragment              go to state 19
-    number                go to state 20
-    fragment_or_variable  go to state 21
+    $default  reduce using rule 31 (fragment)
 
 
 State 23
 
-   15 capture: PERCENT BEGIN_SQUARE . key_values END_SQUARE BEGIN_PAREN command END_PAREN
-   16 key_values: . fragment_or_variable EQUALS fragment
-   17           | . key_values COMMA fragment_or_variable EQUALS fragment
-   32 fragment_or_variable: . FRAGMENT
-   33                     | . VARIABLE
+   30 fragment: fragment_or_variable .
 
-    FRAGMENT  shift, and go to state 6
-    VARIABLE  shift, and go to state 9
-
-    key_values            go to state 38
-    fragment_or_variable  go to state 39
+    $default  reduce using rule 30 (fragment)
 
 
 State 24
 
-   10 pipeline: . instruction
-   11         | . pipeline PIPE instruction
-   12 instruction: . command
-   13            | . capture
-   14 capture: . PERCENT BEGIN_PAREN command END_PAREN
-   15        | . PERCENT BEGIN_SQUARE key_values END_SQUARE BEGIN_PAREN command END_PAREN
-   18 command: . arguments
-   19 arguments: . fragments
-   20          | . arguments WHITESPACE fragments
-   21 fragments: . fragment
-   22          | . fragments fragment
-   23 fragment: . fragment_or_variable
-   24         | . number
-   25         | . MINUS
-   26         | . SINGLE_QUOTED
-   27         | . DOUBLE_QUOTED
-   28         | . DOLLAR VARIABLE
-   29         | . DOLLAR BEGIN_PAREN pipeline END_PAREN
-   29         | DOLLAR BEGIN_PAREN . pipeline END_PAREN
-   30         | . BEGIN_PAREN expression END_PAREN
-   31 number: . NUMBER
-   32 fragment_or_variable: . FRAGMENT
-   33                     | . VARIABLE
+   20 capture: PERCENT BEGIN_PAREN . command END_PAREN
+   24 command: . arguments
+   25 arguments: . fragments
+   26          | . arguments WHITESPACE fragments
+   27 fragments: . fragment
+   28          | . fragments fragment
+   29          | . fragments keyword_as_string
+   30 fragment: . fragment_or_variable
+   31         | . number
+   32         | . MINUS
+   33         | . SINGLE_QUOTED
+   34         | . DOUBLE_QUOTED
+   35         | . DOLLAR VARIABLE
+   36         | . DOLLAR NUMBER
+   37         | . DOLLAR BEGIN_PAREN pipeline END_PAREN
+   38         | . BEGIN_PAREN expression END_PAREN
+   39 number: . NUMBER
+   48 fragment_or_variable: . FRAGMENT
+   49                     | . VARIABLE
 
-    PERCENT        shift, and go to state 1
-    DOLLAR         shift, and go to state 26
+    DOLLAR         shift, and go to state 29
     BEGIN_PAREN    shift, and go to state 3
     MINUS          shift, and go to state 4
-    NUMBER         shift, and go to state 5
-    FRAGMENT       shift, and go to state 6
-    SINGLE_QUOTED  shift, and go to state 7
-    DOUBLE_QUOTED  shift, and go to state 8
-    VARIABLE       shift, and go to state 9
+    NUMBER         shift, and go to state 6
+    FRAGMENT       shift, and go to state 7
+    SINGLE_QUOTED  shift, and go to state 8
+    DOUBLE_QUOTED  shift, and go to state 9
+    VARIABLE       shift, and go to state 10
 
-    pipeline              go to state 40
-    instruction           go to state 14
-    capture               go to state 15
-    command               go to state 16
-    arguments             go to state 17
-    fragments             go to state 18
-    fragment              go to state 19
-    number                go to state 20
-    fragment_or_variable  go to state 21
+    command               go to state 52
+    arguments             go to state 19
+    fragments             go to state 20
+    fragment              go to state 21
+    number                go to state 22
+    fragment_or_variable  go to state 23
 
 
 State 25
 
-    9 assignment: DOLLAR VARIABLE . EQUALS fragments
-   28 fragment: DOLLAR VARIABLE .  [$end, WHITESPACE, TERMINATING_NEWLINE, PIPE, DOLLAR, BEGIN_PAREN, SEMICOLON, AMPERSAND, MINUS, NUMBER, FRAGMENT, SINGLE_QUOTED, DOUBLE_QUOTED, VARIABLE]
+   21 capture: PERCENT BEGIN_SQUARE . key_values END_SQUARE BEGIN_PAREN command END_PAREN
+   22 key_values: . fragment_or_variable EQUALS fragment
+   23           | . key_values COMMA fragment_or_variable EQUALS fragment
+   48 fragment_or_variable: . FRAGMENT
+   49                     | . VARIABLE
 
-    EQUALS  shift, and go to state 41
+    FRAGMENT  shift, and go to state 7
+    VARIABLE  shift, and go to state 10
 
-    $default  reduce using rule 28 (fragment)
+    key_values            go to state 53
+    fragment_or_variable  go to state 54
 
 
 State 26
 
-   28 fragment: DOLLAR . VARIABLE
-   29         | DOLLAR . BEGIN_PAREN pipeline END_PAREN
+   16 pipeline: . instruction
+   17         | . pipeline PIPE instruction
+   18 instruction: . command
+   19            | . capture
+   20 capture: . PERCENT BEGIN_PAREN command END_PAREN
+   21        | . PERCENT BEGIN_SQUARE key_values END_SQUARE BEGIN_PAREN command END_PAREN
+   24 command: . arguments
+   25 arguments: . fragments
+   26          | . arguments WHITESPACE fragments
+   27 fragments: . fragment
+   28          | . fragments fragment
+   29          | . fragments keyword_as_string
+   30 fragment: . fragment_or_variable
+   31         | . number
+   32         | . MINUS
+   33         | . SINGLE_QUOTED
+   34         | . DOUBLE_QUOTED
+   35         | . DOLLAR VARIABLE
+   36         | . DOLLAR NUMBER
+   37         | . DOLLAR BEGIN_PAREN pipeline END_PAREN
+   37         | DOLLAR BEGIN_PAREN . pipeline END_PAREN
+   38         | . BEGIN_PAREN expression END_PAREN
+   39 number: . NUMBER
+   48 fragment_or_variable: . FRAGMENT
+   49                     | . VARIABLE
 
-    BEGIN_PAREN  shift, and go to state 24
-    VARIABLE     shift, and go to state 42
+    PERCENT        shift, and go to state 1
+    DOLLAR         shift, and go to state 29
+    BEGIN_PAREN    shift, and go to state 3
+    MINUS          shift, and go to state 4
+    NUMBER         shift, and go to state 6
+    FRAGMENT       shift, and go to state 7
+    SINGLE_QUOTED  shift, and go to state 8
+    DOUBLE_QUOTED  shift, and go to state 9
+    VARIABLE       shift, and go to state 10
+
+    pipeline              go to state 55
+    instruction           go to state 16
+    capture               go to state 17
+    command               go to state 18
+    arguments             go to state 19
+    fragments             go to state 20
+    fragment              go to state 21
+    number                go to state 22
+    fragment_or_variable  go to state 23
 
 
 State 27
 
-   34 expression: fragment .
+   36 fragment: DOLLAR NUMBER .
 
-    $default  reduce using rule 34 (expression)
+    $default  reduce using rule 36 (fragment)
 
 
 State 28
 
-   30 fragment: BEGIN_PAREN expression . END_PAREN
-   35 expression: expression . ACCESS expression
-   36           | expression . BEGIN_PAREN comma_arguments END_PAREN
-   37           | expression . DIVIDE expression
-   38           | expression . MULTIPLY expression
-   39           | expression . ADD expression
-   40           | expression . MINUS expression
+   15 assignment: DOLLAR VARIABLE . EQUALS fragments
+   35 fragment: DOLLAR VARIABLE .  [$end, WHITESPACE, TERMINATING_NEWLINE, PIPE, DOLLAR, BEGIN_PAREN, END_BRACE, SEMICOLON, AMPERSAND, MINUS, KEYWORD_WHILE, KEYWORD_DO, KEYWORD_FOR, KEYWORD_FOREACH, KEYWORD_BREAK, KEYWORD_CONTINUE, KEYWORD_IF, KEYWORD_ELSE, NUMBER, FRAGMENT, SINGLE_QUOTED, DOUBLE_QUOTED, VARIABLE]
 
-    BEGIN_PAREN  shift, and go to state 43
-    END_PAREN    shift, and go to state 44
-    ACCESS       shift, and go to state 45
-    MINUS        shift, and go to state 46
-    ADD          shift, and go to state 47
-    MULTIPLY     shift, and go to state 48
-    DIVIDE       shift, and go to state 49
+    EQUALS  shift, and go to state 56
+
+    $default  reduce using rule 35 (fragment)
 
 
 State 29
+
+   35 fragment: DOLLAR . VARIABLE
+   36         | DOLLAR . NUMBER
+   37         | DOLLAR . BEGIN_PAREN pipeline END_PAREN
+
+    BEGIN_PAREN  shift, and go to state 26
+    NUMBER       shift, and go to state 27
+    VARIABLE     shift, and go to state 57
+
+
+State 30
+
+   50 expression: fragment .
+
+    $default  reduce using rule 50 (expression)
+
+
+State 31
+
+   38 fragment: BEGIN_PAREN expression . END_PAREN
+   51 expression: expression . ACCESS expression
+   52           | expression . BEGIN_PAREN comma_arguments END_PAREN
+   53           | expression . DIVIDE expression
+   54           | expression . MULTIPLY expression
+   55           | expression . ADD expression
+   56           | expression . WHITESPACE MINUS expression
+
+    WHITESPACE   shift, and go to state 58
+    BEGIN_PAREN  shift, and go to state 59
+    END_PAREN    shift, and go to state 60
+    ACCESS       shift, and go to state 61
+    ADD          shift, and go to state 62
+    MULTIPLY     shift, and go to state 63
+    DIVIDE       shift, and go to state 64
+
+
+State 32
+
+    7 optional_whitespace: WHITESPACE .
+
+    $default  reduce using rule 7 (optional_whitespace)
+
+
+State 33
+
+    8 optional_whitespace: TERMINATING_NEWLINE .
+
+    $default  reduce using rule 8 (optional_whitespace)
+
+
+State 34
+
+   12 statement: KEYWORD_IF optional_whitespace . fragment optional_whitespace BEGIN_BRACE statements END_BRACE KEYWORD_ELSE BEGIN_BRACE statements END_BRACE
+   13          | KEYWORD_IF optional_whitespace . fragment optional_whitespace BEGIN_BRACE statements END_BRACE
+   30 fragment: . fragment_or_variable
+   31         | . number
+   32         | . MINUS
+   33         | . SINGLE_QUOTED
+   34         | . DOUBLE_QUOTED
+   35         | . DOLLAR VARIABLE
+   36         | . DOLLAR NUMBER
+   37         | . DOLLAR BEGIN_PAREN pipeline END_PAREN
+   38         | . BEGIN_PAREN expression END_PAREN
+   39 number: . NUMBER
+   48 fragment_or_variable: . FRAGMENT
+   49                     | . VARIABLE
+
+    DOLLAR         shift, and go to state 29
+    BEGIN_PAREN    shift, and go to state 3
+    MINUS          shift, and go to state 4
+    NUMBER         shift, and go to state 6
+    FRAGMENT       shift, and go to state 7
+    SINGLE_QUOTED  shift, and go to state 8
+    DOUBLE_QUOTED  shift, and go to state 9
+    VARIABLE       shift, and go to state 10
+
+    fragment              go to state 65
+    number                go to state 22
+    fragment_or_variable  go to state 23
+
+
+State 35
 
     0 $accept: root $end .
 
     $default  accept
 
 
-State 30
+State 36
 
-    3 terminator: TERMINATING_NEWLINE .
-
-    $default  reduce using rule 3 (terminator)
-
-
-State 31
-
-    4 terminator: SEMICOLON .
+    4 terminator: TERMINATING_NEWLINE .
 
     $default  reduce using rule 4 (terminator)
 
 
-State 32
+State 37
 
-    2 root: root terminator . statement
-    5 statement: . pipeline AMPERSAND
-    6          | . pipeline
-    7          | . assignment
-    8          | .  [$end, TERMINATING_NEWLINE, SEMICOLON]
-    9 assignment: . DOLLAR VARIABLE EQUALS fragments
-   10 pipeline: . instruction
-   11         | . pipeline PIPE instruction
-   12 instruction: . command
-   13            | . capture
-   14 capture: . PERCENT BEGIN_PAREN command END_PAREN
-   15        | . PERCENT BEGIN_SQUARE key_values END_SQUARE BEGIN_PAREN command END_PAREN
-   18 command: . arguments
-   19 arguments: . fragments
-   20          | . arguments WHITESPACE fragments
-   21 fragments: . fragment
-   22          | . fragments fragment
-   23 fragment: . fragment_or_variable
-   24         | . number
-   25         | . MINUS
-   26         | . SINGLE_QUOTED
-   27         | . DOUBLE_QUOTED
-   28         | . DOLLAR VARIABLE
-   29         | . DOLLAR BEGIN_PAREN pipeline END_PAREN
-   30         | . BEGIN_PAREN expression END_PAREN
-   31 number: . NUMBER
-   32 fragment_or_variable: . FRAGMENT
-   33                     | . VARIABLE
+    5 terminator: SEMICOLON .
+
+    $default  reduce using rule 5 (terminator)
+
+
+State 38
+
+    3 statements: statements terminator . statement
+    9 statement: . pipeline AMPERSAND
+   10          | . pipeline
+   11          | . assignment
+   12          | . KEYWORD_IF optional_whitespace fragment optional_whitespace BEGIN_BRACE statements END_BRACE KEYWORD_ELSE BEGIN_BRACE statements END_BRACE
+   13          | . KEYWORD_IF optional_whitespace fragment optional_whitespace BEGIN_BRACE statements END_BRACE
+   14          | .  [$end, TERMINATING_NEWLINE, END_BRACE, SEMICOLON]
+   15 assignment: . DOLLAR VARIABLE EQUALS fragments
+   16 pipeline: . instruction
+   17         | . pipeline PIPE instruction
+   18 instruction: . command
+   19            | . capture
+   20 capture: . PERCENT BEGIN_PAREN command END_PAREN
+   21        | . PERCENT BEGIN_SQUARE key_values END_SQUARE BEGIN_PAREN command END_PAREN
+   24 command: . arguments
+   25 arguments: . fragments
+   26          | . arguments WHITESPACE fragments
+   27 fragments: . fragment
+   28          | . fragments fragment
+   29          | . fragments keyword_as_string
+   30 fragment: . fragment_or_variable
+   31         | . number
+   32         | . MINUS
+   33         | . SINGLE_QUOTED
+   34         | . DOUBLE_QUOTED
+   35         | . DOLLAR VARIABLE
+   36         | . DOLLAR NUMBER
+   37         | . DOLLAR BEGIN_PAREN pipeline END_PAREN
+   38         | . BEGIN_PAREN expression END_PAREN
+   39 number: . NUMBER
+   48 fragment_or_variable: . FRAGMENT
+   49                     | . VARIABLE
 
     PERCENT        shift, and go to state 1
     DOLLAR         shift, and go to state 2
     BEGIN_PAREN    shift, and go to state 3
     MINUS          shift, and go to state 4
-    NUMBER         shift, and go to state 5
-    FRAGMENT       shift, and go to state 6
-    SINGLE_QUOTED  shift, and go to state 7
-    DOUBLE_QUOTED  shift, and go to state 8
-    VARIABLE       shift, and go to state 9
+    KEYWORD_IF     shift, and go to state 5
+    NUMBER         shift, and go to state 6
+    FRAGMENT       shift, and go to state 7
+    SINGLE_QUOTED  shift, and go to state 8
+    DOUBLE_QUOTED  shift, and go to state 9
+    VARIABLE       shift, and go to state 10
 
-    $default  reduce using rule 8 (statement)
+    $default  reduce using rule 14 (statement)
 
-    statement             go to state 50
-    assignment            go to state 12
-    pipeline              go to state 13
-    instruction           go to state 14
-    capture               go to state 15
-    command               go to state 16
-    arguments             go to state 17
-    fragments             go to state 18
-    fragment              go to state 19
-    number                go to state 20
-    fragment_or_variable  go to state 21
-
-
-State 33
-
-   11 pipeline: pipeline PIPE . instruction
-   12 instruction: . command
-   13            | . capture
-   14 capture: . PERCENT BEGIN_PAREN command END_PAREN
-   15        | . PERCENT BEGIN_SQUARE key_values END_SQUARE BEGIN_PAREN command END_PAREN
-   18 command: . arguments
-   19 arguments: . fragments
-   20          | . arguments WHITESPACE fragments
-   21 fragments: . fragment
-   22          | . fragments fragment
-   23 fragment: . fragment_or_variable
-   24         | . number
-   25         | . MINUS
-   26         | . SINGLE_QUOTED
-   27         | . DOUBLE_QUOTED
-   28         | . DOLLAR VARIABLE
-   29         | . DOLLAR BEGIN_PAREN pipeline END_PAREN
-   30         | . BEGIN_PAREN expression END_PAREN
-   31 number: . NUMBER
-   32 fragment_or_variable: . FRAGMENT
-   33                     | . VARIABLE
-
-    PERCENT        shift, and go to state 1
-    DOLLAR         shift, and go to state 26
-    BEGIN_PAREN    shift, and go to state 3
-    MINUS          shift, and go to state 4
-    NUMBER         shift, and go to state 5
-    FRAGMENT       shift, and go to state 6
-    SINGLE_QUOTED  shift, and go to state 7
-    DOUBLE_QUOTED  shift, and go to state 8
-    VARIABLE       shift, and go to state 9
-
-    instruction           go to state 51
-    capture               go to state 15
-    command               go to state 16
-    arguments             go to state 17
-    fragments             go to state 18
-    fragment              go to state 19
-    number                go to state 20
-    fragment_or_variable  go to state 21
-
-
-State 34
-
-    5 statement: pipeline AMPERSAND .
-
-    $default  reduce using rule 5 (statement)
-
-
-State 35
-
-   20 arguments: arguments WHITESPACE . fragments
-   21 fragments: . fragment
-   22          | . fragments fragment
-   23 fragment: . fragment_or_variable
-   24         | . number
-   25         | . MINUS
-   26         | . SINGLE_QUOTED
-   27         | . DOUBLE_QUOTED
-   28         | . DOLLAR VARIABLE
-   29         | . DOLLAR BEGIN_PAREN pipeline END_PAREN
-   30         | . BEGIN_PAREN expression END_PAREN
-   31 number: . NUMBER
-   32 fragment_or_variable: . FRAGMENT
-   33                     | . VARIABLE
-
-    DOLLAR         shift, and go to state 26
-    BEGIN_PAREN    shift, and go to state 3
-    MINUS          shift, and go to state 4
-    NUMBER         shift, and go to state 5
-    FRAGMENT       shift, and go to state 6
-    SINGLE_QUOTED  shift, and go to state 7
-    DOUBLE_QUOTED  shift, and go to state 8
-    VARIABLE       shift, and go to state 9
-
-    fragments             go to state 52
-    fragment              go to state 19
-    number                go to state 20
-    fragment_or_variable  go to state 21
-
-
-State 36
-
-   22 fragments: fragments fragment .
-
-    $default  reduce using rule 22 (fragments)
-
-
-State 37
-
-   14 capture: PERCENT BEGIN_PAREN command . END_PAREN
-
-    END_PAREN  shift, and go to state 53
-
-
-State 38
-
-   15 capture: PERCENT BEGIN_SQUARE key_values . END_SQUARE BEGIN_PAREN command END_PAREN
-   17 key_values: key_values . COMMA fragment_or_variable EQUALS fragment
-
-    END_SQUARE  shift, and go to state 54
-    COMMA       shift, and go to state 55
+    statement             go to state 66
+    assignment            go to state 14
+    pipeline              go to state 15
+    instruction           go to state 16
+    capture               go to state 17
+    command               go to state 18
+    arguments             go to state 19
+    fragments             go to state 20
+    fragment              go to state 21
+    number                go to state 22
+    fragment_or_variable  go to state 23
 
 
 State 39
 
-   16 key_values: fragment_or_variable . EQUALS fragment
+   17 pipeline: pipeline PIPE . instruction
+   18 instruction: . command
+   19            | . capture
+   20 capture: . PERCENT BEGIN_PAREN command END_PAREN
+   21        | . PERCENT BEGIN_SQUARE key_values END_SQUARE BEGIN_PAREN command END_PAREN
+   24 command: . arguments
+   25 arguments: . fragments
+   26          | . arguments WHITESPACE fragments
+   27 fragments: . fragment
+   28          | . fragments fragment
+   29          | . fragments keyword_as_string
+   30 fragment: . fragment_or_variable
+   31         | . number
+   32         | . MINUS
+   33         | . SINGLE_QUOTED
+   34         | . DOUBLE_QUOTED
+   35         | . DOLLAR VARIABLE
+   36         | . DOLLAR NUMBER
+   37         | . DOLLAR BEGIN_PAREN pipeline END_PAREN
+   38         | . BEGIN_PAREN expression END_PAREN
+   39 number: . NUMBER
+   48 fragment_or_variable: . FRAGMENT
+   49                     | . VARIABLE
 
-    EQUALS  shift, and go to state 56
+    PERCENT        shift, and go to state 1
+    DOLLAR         shift, and go to state 29
+    BEGIN_PAREN    shift, and go to state 3
+    MINUS          shift, and go to state 4
+    NUMBER         shift, and go to state 6
+    FRAGMENT       shift, and go to state 7
+    SINGLE_QUOTED  shift, and go to state 8
+    DOUBLE_QUOTED  shift, and go to state 9
+    VARIABLE       shift, and go to state 10
+
+    instruction           go to state 67
+    capture               go to state 17
+    command               go to state 18
+    arguments             go to state 19
+    fragments             go to state 20
+    fragment              go to state 21
+    number                go to state 22
+    fragment_or_variable  go to state 23
 
 
 State 40
 
-   11 pipeline: pipeline . PIPE instruction
-   29 fragment: DOLLAR BEGIN_PAREN pipeline . END_PAREN
+    9 statement: pipeline AMPERSAND .
 
-    PIPE       shift, and go to state 33
-    END_PAREN  shift, and go to state 57
+    $default  reduce using rule 9 (statement)
 
 
 State 41
 
-    9 assignment: DOLLAR VARIABLE EQUALS . fragments
-   21 fragments: . fragment
-   22          | . fragments fragment
-   23 fragment: . fragment_or_variable
-   24         | . number
-   25         | . MINUS
-   26         | . SINGLE_QUOTED
-   27         | . DOUBLE_QUOTED
-   28         | . DOLLAR VARIABLE
-   29         | . DOLLAR BEGIN_PAREN pipeline END_PAREN
-   30         | . BEGIN_PAREN expression END_PAREN
-   31 number: . NUMBER
-   32 fragment_or_variable: . FRAGMENT
-   33                     | . VARIABLE
+   26 arguments: arguments WHITESPACE . fragments
+   27 fragments: . fragment
+   28          | . fragments fragment
+   29          | . fragments keyword_as_string
+   30 fragment: . fragment_or_variable
+   31         | . number
+   32         | . MINUS
+   33         | . SINGLE_QUOTED
+   34         | . DOUBLE_QUOTED
+   35         | . DOLLAR VARIABLE
+   36         | . DOLLAR NUMBER
+   37         | . DOLLAR BEGIN_PAREN pipeline END_PAREN
+   38         | . BEGIN_PAREN expression END_PAREN
+   39 number: . NUMBER
+   48 fragment_or_variable: . FRAGMENT
+   49                     | . VARIABLE
 
-    DOLLAR         shift, and go to state 26
+    DOLLAR         shift, and go to state 29
     BEGIN_PAREN    shift, and go to state 3
     MINUS          shift, and go to state 4
-    NUMBER         shift, and go to state 5
-    FRAGMENT       shift, and go to state 6
-    SINGLE_QUOTED  shift, and go to state 7
-    DOUBLE_QUOTED  shift, and go to state 8
-    VARIABLE       shift, and go to state 9
+    NUMBER         shift, and go to state 6
+    FRAGMENT       shift, and go to state 7
+    SINGLE_QUOTED  shift, and go to state 8
+    DOUBLE_QUOTED  shift, and go to state 9
+    VARIABLE       shift, and go to state 10
 
-    fragments             go to state 58
-    fragment              go to state 19
-    number                go to state 20
-    fragment_or_variable  go to state 21
+    fragments             go to state 68
+    fragment              go to state 21
+    number                go to state 22
+    fragment_or_variable  go to state 23
 
 
 State 42
 
-   28 fragment: DOLLAR VARIABLE .
+   42 keyword_as_string: KEYWORD_WHILE .
 
-    $default  reduce using rule 28 (fragment)
+    $default  reduce using rule 42 (keyword_as_string)
 
 
 State 43
 
-   21 fragments: . fragment
-   22          | . fragments fragment
-   23 fragment: . fragment_or_variable
-   24         | . number
-   25         | . MINUS
-   26         | . SINGLE_QUOTED
-   27         | . DOUBLE_QUOTED
-   28         | . DOLLAR VARIABLE
-   29         | . DOLLAR BEGIN_PAREN pipeline END_PAREN
-   30         | . BEGIN_PAREN expression END_PAREN
-   31 number: . NUMBER
-   32 fragment_or_variable: . FRAGMENT
-   33                     | . VARIABLE
-   36 expression: expression BEGIN_PAREN . comma_arguments END_PAREN
-   41 comma_arguments: . fragments
-   42                | . comma_arguments COMMA fragments
+   45 keyword_as_string: KEYWORD_DO .
 
-    DOLLAR         shift, and go to state 26
-    BEGIN_PAREN    shift, and go to state 3
-    MINUS          shift, and go to state 4
-    NUMBER         shift, and go to state 5
-    FRAGMENT       shift, and go to state 6
-    SINGLE_QUOTED  shift, and go to state 7
-    DOUBLE_QUOTED  shift, and go to state 8
-    VARIABLE       shift, and go to state 9
-
-    fragments             go to state 59
-    fragment              go to state 19
-    number                go to state 20
-    fragment_or_variable  go to state 21
-    comma_arguments       go to state 60
+    $default  reduce using rule 45 (keyword_as_string)
 
 
 State 44
 
-   30 fragment: BEGIN_PAREN expression END_PAREN .
+   43 keyword_as_string: KEYWORD_FOR .
 
-    $default  reduce using rule 30 (fragment)
+    $default  reduce using rule 43 (keyword_as_string)
 
 
 State 45
 
-   23 fragment: . fragment_or_variable
-   24         | . number
-   25         | . MINUS
-   26         | . SINGLE_QUOTED
-   27         | . DOUBLE_QUOTED
-   28         | . DOLLAR VARIABLE
-   29         | . DOLLAR BEGIN_PAREN pipeline END_PAREN
-   30         | . BEGIN_PAREN expression END_PAREN
-   31 number: . NUMBER
-   32 fragment_or_variable: . FRAGMENT
-   33                     | . VARIABLE
-   34 expression: . fragment
-   35           | . expression ACCESS expression
-   35           | expression ACCESS . expression
-   36           | . expression BEGIN_PAREN comma_arguments END_PAREN
-   37           | . expression DIVIDE expression
-   38           | . expression MULTIPLY expression
-   39           | . expression ADD expression
-   40           | . expression MINUS expression
+   44 keyword_as_string: KEYWORD_FOREACH .
 
-    DOLLAR         shift, and go to state 26
-    BEGIN_PAREN    shift, and go to state 3
-    MINUS          shift, and go to state 4
-    NUMBER         shift, and go to state 5
-    FRAGMENT       shift, and go to state 6
-    SINGLE_QUOTED  shift, and go to state 7
-    DOUBLE_QUOTED  shift, and go to state 8
-    VARIABLE       shift, and go to state 9
-
-    fragment              go to state 27
-    number                go to state 20
-    fragment_or_variable  go to state 21
-    expression            go to state 61
+    $default  reduce using rule 44 (keyword_as_string)
 
 
 State 46
 
-   23 fragment: . fragment_or_variable
-   24         | . number
-   25         | . MINUS
-   26         | . SINGLE_QUOTED
-   27         | . DOUBLE_QUOTED
-   28         | . DOLLAR VARIABLE
-   29         | . DOLLAR BEGIN_PAREN pipeline END_PAREN
-   30         | . BEGIN_PAREN expression END_PAREN
-   31 number: . NUMBER
-   32 fragment_or_variable: . FRAGMENT
-   33                     | . VARIABLE
-   34 expression: . fragment
-   35           | . expression ACCESS expression
-   36           | . expression BEGIN_PAREN comma_arguments END_PAREN
-   37           | . expression DIVIDE expression
-   38           | . expression MULTIPLY expression
-   39           | . expression ADD expression
-   40           | . expression MINUS expression
-   40           | expression MINUS . expression
+   46 keyword_as_string: KEYWORD_BREAK .
 
-    DOLLAR         shift, and go to state 26
-    BEGIN_PAREN    shift, and go to state 3
-    MINUS          shift, and go to state 4
-    NUMBER         shift, and go to state 5
-    FRAGMENT       shift, and go to state 6
-    SINGLE_QUOTED  shift, and go to state 7
-    DOUBLE_QUOTED  shift, and go to state 8
-    VARIABLE       shift, and go to state 9
-
-    fragment              go to state 27
-    number                go to state 20
-    fragment_or_variable  go to state 21
-    expression            go to state 62
+    $default  reduce using rule 46 (keyword_as_string)
 
 
 State 47
 
-   23 fragment: . fragment_or_variable
-   24         | . number
-   25         | . MINUS
-   26         | . SINGLE_QUOTED
-   27         | . DOUBLE_QUOTED
-   28         | . DOLLAR VARIABLE
-   29         | . DOLLAR BEGIN_PAREN pipeline END_PAREN
-   30         | . BEGIN_PAREN expression END_PAREN
-   31 number: . NUMBER
-   32 fragment_or_variable: . FRAGMENT
-   33                     | . VARIABLE
-   34 expression: . fragment
-   35           | . expression ACCESS expression
-   36           | . expression BEGIN_PAREN comma_arguments END_PAREN
-   37           | . expression DIVIDE expression
-   38           | . expression MULTIPLY expression
-   39           | . expression ADD expression
-   39           | expression ADD . expression
-   40           | . expression MINUS expression
+   47 keyword_as_string: KEYWORD_CONTINUE .
 
-    DOLLAR         shift, and go to state 26
-    BEGIN_PAREN    shift, and go to state 3
-    MINUS          shift, and go to state 4
-    NUMBER         shift, and go to state 5
-    FRAGMENT       shift, and go to state 6
-    SINGLE_QUOTED  shift, and go to state 7
-    DOUBLE_QUOTED  shift, and go to state 8
-    VARIABLE       shift, and go to state 9
-
-    fragment              go to state 27
-    number                go to state 20
-    fragment_or_variable  go to state 21
-    expression            go to state 63
+    $default  reduce using rule 47 (keyword_as_string)
 
 
 State 48
 
-   23 fragment: . fragment_or_variable
-   24         | . number
-   25         | . MINUS
-   26         | . SINGLE_QUOTED
-   27         | . DOUBLE_QUOTED
-   28         | . DOLLAR VARIABLE
-   29         | . DOLLAR BEGIN_PAREN pipeline END_PAREN
-   30         | . BEGIN_PAREN expression END_PAREN
-   31 number: . NUMBER
-   32 fragment_or_variable: . FRAGMENT
-   33                     | . VARIABLE
-   34 expression: . fragment
-   35           | . expression ACCESS expression
-   36           | . expression BEGIN_PAREN comma_arguments END_PAREN
-   37           | . expression DIVIDE expression
-   38           | . expression MULTIPLY expression
-   38           | expression MULTIPLY . expression
-   39           | . expression ADD expression
-   40           | . expression MINUS expression
+   40 keyword_as_string: KEYWORD_IF .
 
-    DOLLAR         shift, and go to state 26
-    BEGIN_PAREN    shift, and go to state 3
-    MINUS          shift, and go to state 4
-    NUMBER         shift, and go to state 5
-    FRAGMENT       shift, and go to state 6
-    SINGLE_QUOTED  shift, and go to state 7
-    DOUBLE_QUOTED  shift, and go to state 8
-    VARIABLE       shift, and go to state 9
-
-    fragment              go to state 27
-    number                go to state 20
-    fragment_or_variable  go to state 21
-    expression            go to state 64
+    $default  reduce using rule 40 (keyword_as_string)
 
 
 State 49
 
-   23 fragment: . fragment_or_variable
-   24         | . number
-   25         | . MINUS
-   26         | . SINGLE_QUOTED
-   27         | . DOUBLE_QUOTED
-   28         | . DOLLAR VARIABLE
-   29         | . DOLLAR BEGIN_PAREN pipeline END_PAREN
-   30         | . BEGIN_PAREN expression END_PAREN
-   31 number: . NUMBER
-   32 fragment_or_variable: . FRAGMENT
-   33                     | . VARIABLE
-   34 expression: . fragment
-   35           | . expression ACCESS expression
-   36           | . expression BEGIN_PAREN comma_arguments END_PAREN
-   37           | . expression DIVIDE expression
-   37           | expression DIVIDE . expression
-   38           | . expression MULTIPLY expression
-   39           | . expression ADD expression
-   40           | . expression MINUS expression
+   41 keyword_as_string: KEYWORD_ELSE .
 
-    DOLLAR         shift, and go to state 26
-    BEGIN_PAREN    shift, and go to state 3
-    MINUS          shift, and go to state 4
-    NUMBER         shift, and go to state 5
-    FRAGMENT       shift, and go to state 6
-    SINGLE_QUOTED  shift, and go to state 7
-    DOUBLE_QUOTED  shift, and go to state 8
-    VARIABLE       shift, and go to state 9
-
-    fragment              go to state 27
-    number                go to state 20
-    fragment_or_variable  go to state 21
-    expression            go to state 65
+    $default  reduce using rule 41 (keyword_as_string)
 
 
 State 50
 
-    2 root: root terminator statement .
+   28 fragments: fragments fragment .
 
-    $default  reduce using rule 2 (root)
+    $default  reduce using rule 28 (fragments)
 
 
 State 51
 
-   11 pipeline: pipeline PIPE instruction .
+   29 fragments: fragments keyword_as_string .
 
-    $default  reduce using rule 11 (pipeline)
+    $default  reduce using rule 29 (fragments)
 
 
 State 52
 
-   20 arguments: arguments WHITESPACE fragments .  [$end, WHITESPACE, TERMINATING_NEWLINE, PIPE, END_PAREN, SEMICOLON, AMPERSAND]
-   22 fragments: fragments . fragment
-   23 fragment: . fragment_or_variable
-   24         | . number
-   25         | . MINUS
-   26         | . SINGLE_QUOTED
-   27         | . DOUBLE_QUOTED
-   28         | . DOLLAR VARIABLE
-   29         | . DOLLAR BEGIN_PAREN pipeline END_PAREN
-   30         | . BEGIN_PAREN expression END_PAREN
-   31 number: . NUMBER
-   32 fragment_or_variable: . FRAGMENT
-   33                     | . VARIABLE
+   20 capture: PERCENT BEGIN_PAREN command . END_PAREN
 
-    DOLLAR         shift, and go to state 26
-    BEGIN_PAREN    shift, and go to state 3
-    MINUS          shift, and go to state 4
-    NUMBER         shift, and go to state 5
-    FRAGMENT       shift, and go to state 6
-    SINGLE_QUOTED  shift, and go to state 7
-    DOUBLE_QUOTED  shift, and go to state 8
-    VARIABLE       shift, and go to state 9
-
-    $default  reduce using rule 20 (arguments)
-
-    fragment              go to state 36
-    number                go to state 20
-    fragment_or_variable  go to state 21
+    END_PAREN  shift, and go to state 69
 
 
 State 53
 
-   14 capture: PERCENT BEGIN_PAREN command END_PAREN .
+   21 capture: PERCENT BEGIN_SQUARE key_values . END_SQUARE BEGIN_PAREN command END_PAREN
+   23 key_values: key_values . COMMA fragment_or_variable EQUALS fragment
 
-    $default  reduce using rule 14 (capture)
+    END_SQUARE  shift, and go to state 70
+    COMMA       shift, and go to state 71
 
 
 State 54
 
-   15 capture: PERCENT BEGIN_SQUARE key_values END_SQUARE . BEGIN_PAREN command END_PAREN
-
-    BEGIN_PAREN  shift, and go to state 66
-
-
-State 55
-
-   17 key_values: key_values COMMA . fragment_or_variable EQUALS fragment
-   32 fragment_or_variable: . FRAGMENT
-   33                     | . VARIABLE
-
-    FRAGMENT  shift, and go to state 6
-    VARIABLE  shift, and go to state 9
-
-    fragment_or_variable  go to state 67
-
-
-State 56
-
-   16 key_values: fragment_or_variable EQUALS . fragment
-   23 fragment: . fragment_or_variable
-   24         | . number
-   25         | . MINUS
-   26         | . SINGLE_QUOTED
-   27         | . DOUBLE_QUOTED
-   28         | . DOLLAR VARIABLE
-   29         | . DOLLAR BEGIN_PAREN pipeline END_PAREN
-   30         | . BEGIN_PAREN expression END_PAREN
-   31 number: . NUMBER
-   32 fragment_or_variable: . FRAGMENT
-   33                     | . VARIABLE
-
-    DOLLAR         shift, and go to state 26
-    BEGIN_PAREN    shift, and go to state 3
-    MINUS          shift, and go to state 4
-    NUMBER         shift, and go to state 5
-    FRAGMENT       shift, and go to state 6
-    SINGLE_QUOTED  shift, and go to state 7
-    DOUBLE_QUOTED  shift, and go to state 8
-    VARIABLE       shift, and go to state 9
-
-    fragment              go to state 68
-    number                go to state 20
-    fragment_or_variable  go to state 21
-
-
-State 57
-
-   29 fragment: DOLLAR BEGIN_PAREN pipeline END_PAREN .
-
-    $default  reduce using rule 29 (fragment)
-
-
-State 58
-
-    9 assignment: DOLLAR VARIABLE EQUALS fragments .  [$end, TERMINATING_NEWLINE, SEMICOLON]
-   22 fragments: fragments . fragment
-   23 fragment: . fragment_or_variable
-   24         | . number
-   25         | . MINUS
-   26         | . SINGLE_QUOTED
-   27         | . DOUBLE_QUOTED
-   28         | . DOLLAR VARIABLE
-   29         | . DOLLAR BEGIN_PAREN pipeline END_PAREN
-   30         | . BEGIN_PAREN expression END_PAREN
-   31 number: . NUMBER
-   32 fragment_or_variable: . FRAGMENT
-   33                     | . VARIABLE
-
-    DOLLAR         shift, and go to state 26
-    BEGIN_PAREN    shift, and go to state 3
-    MINUS          shift, and go to state 4
-    NUMBER         shift, and go to state 5
-    FRAGMENT       shift, and go to state 6
-    SINGLE_QUOTED  shift, and go to state 7
-    DOUBLE_QUOTED  shift, and go to state 8
-    VARIABLE       shift, and go to state 9
-
-    $default  reduce using rule 9 (assignment)
-
-    fragment              go to state 36
-    number                go to state 20
-    fragment_or_variable  go to state 21
-
-
-State 59
-
-   22 fragments: fragments . fragment
-   23 fragment: . fragment_or_variable
-   24         | . number
-   25         | . MINUS
-   26         | . SINGLE_QUOTED
-   27         | . DOUBLE_QUOTED
-   28         | . DOLLAR VARIABLE
-   29         | . DOLLAR BEGIN_PAREN pipeline END_PAREN
-   30         | . BEGIN_PAREN expression END_PAREN
-   31 number: . NUMBER
-   32 fragment_or_variable: . FRAGMENT
-   33                     | . VARIABLE
-   41 comma_arguments: fragments .  [END_PAREN, COMMA]
-
-    DOLLAR         shift, and go to state 26
-    BEGIN_PAREN    shift, and go to state 3
-    MINUS          shift, and go to state 4
-    NUMBER         shift, and go to state 5
-    FRAGMENT       shift, and go to state 6
-    SINGLE_QUOTED  shift, and go to state 7
-    DOUBLE_QUOTED  shift, and go to state 8
-    VARIABLE       shift, and go to state 9
-
-    $default  reduce using rule 41 (comma_arguments)
-
-    fragment              go to state 36
-    number                go to state 20
-    fragment_or_variable  go to state 21
-
-
-State 60
-
-   36 expression: expression BEGIN_PAREN comma_arguments . END_PAREN
-   42 comma_arguments: comma_arguments . COMMA fragments
-
-    END_PAREN  shift, and go to state 69
-    COMMA      shift, and go to state 70
-
-
-State 61
-
-   35 expression: expression . ACCESS expression
-   35           | expression ACCESS expression .  [BEGIN_PAREN, END_PAREN, MINUS, ADD, MULTIPLY, DIVIDE]
-   36           | expression . BEGIN_PAREN comma_arguments END_PAREN
-   37           | expression . DIVIDE expression
-   38           | expression . MULTIPLY expression
-   39           | expression . ADD expression
-   40           | expression . MINUS expression
-
-    ACCESS  error (nonassociative)
-
-    $default  reduce using rule 35 (expression)
-
-    Conflict between rule 35 and token BEGIN_PAREN resolved as reduce (BEGIN_PAREN < ACCESS).
-    Conflict between rule 35 and token ACCESS resolved as an error (%nonassoc ACCESS).
-    Conflict between rule 35 and token MINUS resolved as reduce (MINUS < ACCESS).
-    Conflict between rule 35 and token ADD resolved as reduce (ADD < ACCESS).
-    Conflict between rule 35 and token MULTIPLY resolved as reduce (MULTIPLY < ACCESS).
-    Conflict between rule 35 and token DIVIDE resolved as reduce (DIVIDE < ACCESS).
-
-
-State 62
-
-   35 expression: expression . ACCESS expression
-   36           | expression . BEGIN_PAREN comma_arguments END_PAREN
-   37           | expression . DIVIDE expression
-   38           | expression . MULTIPLY expression
-   39           | expression . ADD expression
-   40           | expression . MINUS expression
-   40           | expression MINUS expression .  [END_PAREN, MINUS, ADD]
-
-    BEGIN_PAREN  shift, and go to state 43
-    ACCESS       shift, and go to state 45
-    MULTIPLY     shift, and go to state 48
-    DIVIDE       shift, and go to state 49
-
-    $default  reduce using rule 40 (expression)
-
-    Conflict between rule 40 and token BEGIN_PAREN resolved as shift (MINUS < BEGIN_PAREN).
-    Conflict between rule 40 and token ACCESS resolved as shift (MINUS < ACCESS).
-    Conflict between rule 40 and token MINUS resolved as reduce (%left MINUS).
-    Conflict between rule 40 and token ADD resolved as reduce (%left ADD).
-    Conflict between rule 40 and token MULTIPLY resolved as shift (MINUS < MULTIPLY).
-    Conflict between rule 40 and token DIVIDE resolved as shift (MINUS < DIVIDE).
-
-
-State 63
-
-   35 expression: expression . ACCESS expression
-   36           | expression . BEGIN_PAREN comma_arguments END_PAREN
-   37           | expression . DIVIDE expression
-   38           | expression . MULTIPLY expression
-   39           | expression . ADD expression
-   39           | expression ADD expression .  [END_PAREN, MINUS, ADD]
-   40           | expression . MINUS expression
-
-    BEGIN_PAREN  shift, and go to state 43
-    ACCESS       shift, and go to state 45
-    MULTIPLY     shift, and go to state 48
-    DIVIDE       shift, and go to state 49
-
-    $default  reduce using rule 39 (expression)
-
-    Conflict between rule 39 and token BEGIN_PAREN resolved as shift (ADD < BEGIN_PAREN).
-    Conflict between rule 39 and token ACCESS resolved as shift (ADD < ACCESS).
-    Conflict between rule 39 and token MINUS resolved as reduce (%left MINUS).
-    Conflict between rule 39 and token ADD resolved as reduce (%left ADD).
-    Conflict between rule 39 and token MULTIPLY resolved as shift (ADD < MULTIPLY).
-    Conflict between rule 39 and token DIVIDE resolved as shift (ADD < DIVIDE).
-
-
-State 64
-
-   35 expression: expression . ACCESS expression
-   36           | expression . BEGIN_PAREN comma_arguments END_PAREN
-   37           | expression . DIVIDE expression
-   38           | expression . MULTIPLY expression
-   38           | expression MULTIPLY expression .  [END_PAREN, MINUS, ADD, MULTIPLY, DIVIDE]
-   39           | expression . ADD expression
-   40           | expression . MINUS expression
-
-    BEGIN_PAREN  shift, and go to state 43
-    ACCESS       shift, and go to state 45
-
-    $default  reduce using rule 38 (expression)
-
-    Conflict between rule 38 and token BEGIN_PAREN resolved as shift (MULTIPLY < BEGIN_PAREN).
-    Conflict between rule 38 and token ACCESS resolved as shift (MULTIPLY < ACCESS).
-    Conflict between rule 38 and token MINUS resolved as reduce (MINUS < MULTIPLY).
-    Conflict between rule 38 and token ADD resolved as reduce (ADD < MULTIPLY).
-    Conflict between rule 38 and token MULTIPLY resolved as reduce (%left MULTIPLY).
-    Conflict between rule 38 and token DIVIDE resolved as reduce (%left DIVIDE).
-
-
-State 65
-
-   35 expression: expression . ACCESS expression
-   36           | expression . BEGIN_PAREN comma_arguments END_PAREN
-   37           | expression . DIVIDE expression
-   37           | expression DIVIDE expression .  [END_PAREN, MINUS, ADD, MULTIPLY, DIVIDE]
-   38           | expression . MULTIPLY expression
-   39           | expression . ADD expression
-   40           | expression . MINUS expression
-
-    BEGIN_PAREN  shift, and go to state 43
-    ACCESS       shift, and go to state 45
-
-    $default  reduce using rule 37 (expression)
-
-    Conflict between rule 37 and token BEGIN_PAREN resolved as shift (DIVIDE < BEGIN_PAREN).
-    Conflict between rule 37 and token ACCESS resolved as shift (DIVIDE < ACCESS).
-    Conflict between rule 37 and token MINUS resolved as reduce (MINUS < DIVIDE).
-    Conflict between rule 37 and token ADD resolved as reduce (ADD < DIVIDE).
-    Conflict between rule 37 and token MULTIPLY resolved as reduce (%left MULTIPLY).
-    Conflict between rule 37 and token DIVIDE resolved as reduce (%left DIVIDE).
-
-
-State 66
-
-   15 capture: PERCENT BEGIN_SQUARE key_values END_SQUARE BEGIN_PAREN . command END_PAREN
-   18 command: . arguments
-   19 arguments: . fragments
-   20          | . arguments WHITESPACE fragments
-   21 fragments: . fragment
-   22          | . fragments fragment
-   23 fragment: . fragment_or_variable
-   24         | . number
-   25         | . MINUS
-   26         | . SINGLE_QUOTED
-   27         | . DOUBLE_QUOTED
-   28         | . DOLLAR VARIABLE
-   29         | . DOLLAR BEGIN_PAREN pipeline END_PAREN
-   30         | . BEGIN_PAREN expression END_PAREN
-   31 number: . NUMBER
-   32 fragment_or_variable: . FRAGMENT
-   33                     | . VARIABLE
-
-    DOLLAR         shift, and go to state 26
-    BEGIN_PAREN    shift, and go to state 3
-    MINUS          shift, and go to state 4
-    NUMBER         shift, and go to state 5
-    FRAGMENT       shift, and go to state 6
-    SINGLE_QUOTED  shift, and go to state 7
-    DOUBLE_QUOTED  shift, and go to state 8
-    VARIABLE       shift, and go to state 9
-
-    command               go to state 71
-    arguments             go to state 17
-    fragments             go to state 18
-    fragment              go to state 19
-    number                go to state 20
-    fragment_or_variable  go to state 21
-
-
-State 67
-
-   17 key_values: key_values COMMA fragment_or_variable . EQUALS fragment
+   22 key_values: fragment_or_variable . EQUALS fragment
 
     EQUALS  shift, and go to state 72
 
 
+State 55
+
+   17 pipeline: pipeline . PIPE instruction
+   37 fragment: DOLLAR BEGIN_PAREN pipeline . END_PAREN
+
+    PIPE       shift, and go to state 39
+    END_PAREN  shift, and go to state 73
+
+
+State 56
+
+   15 assignment: DOLLAR VARIABLE EQUALS . fragments
+   27 fragments: . fragment
+   28          | . fragments fragment
+   29          | . fragments keyword_as_string
+   30 fragment: . fragment_or_variable
+   31         | . number
+   32         | . MINUS
+   33         | . SINGLE_QUOTED
+   34         | . DOUBLE_QUOTED
+   35         | . DOLLAR VARIABLE
+   36         | . DOLLAR NUMBER
+   37         | . DOLLAR BEGIN_PAREN pipeline END_PAREN
+   38         | . BEGIN_PAREN expression END_PAREN
+   39 number: . NUMBER
+   48 fragment_or_variable: . FRAGMENT
+   49                     | . VARIABLE
+
+    DOLLAR         shift, and go to state 29
+    BEGIN_PAREN    shift, and go to state 3
+    MINUS          shift, and go to state 4
+    NUMBER         shift, and go to state 6
+    FRAGMENT       shift, and go to state 7
+    SINGLE_QUOTED  shift, and go to state 8
+    DOUBLE_QUOTED  shift, and go to state 9
+    VARIABLE       shift, and go to state 10
+
+    fragments             go to state 74
+    fragment              go to state 21
+    number                go to state 22
+    fragment_or_variable  go to state 23
+
+
+State 57
+
+   35 fragment: DOLLAR VARIABLE .
+
+    $default  reduce using rule 35 (fragment)
+
+
+State 58
+
+   56 expression: expression WHITESPACE . MINUS expression
+
+    MINUS  shift, and go to state 75
+
+
+State 59
+
+   27 fragments: . fragment
+   28          | . fragments fragment
+   29          | . fragments keyword_as_string
+   30 fragment: . fragment_or_variable
+   31         | . number
+   32         | . MINUS
+   33         | . SINGLE_QUOTED
+   34         | . DOUBLE_QUOTED
+   35         | . DOLLAR VARIABLE
+   36         | . DOLLAR NUMBER
+   37         | . DOLLAR BEGIN_PAREN pipeline END_PAREN
+   38         | . BEGIN_PAREN expression END_PAREN
+   39 number: . NUMBER
+   48 fragment_or_variable: . FRAGMENT
+   49                     | . VARIABLE
+   52 expression: expression BEGIN_PAREN . comma_arguments END_PAREN
+   57 comma_arguments: . fragments
+   58                | . comma_arguments COMMA fragments
+
+    DOLLAR         shift, and go to state 29
+    BEGIN_PAREN    shift, and go to state 3
+    MINUS          shift, and go to state 4
+    NUMBER         shift, and go to state 6
+    FRAGMENT       shift, and go to state 7
+    SINGLE_QUOTED  shift, and go to state 8
+    DOUBLE_QUOTED  shift, and go to state 9
+    VARIABLE       shift, and go to state 10
+
+    fragments             go to state 76
+    fragment              go to state 21
+    number                go to state 22
+    fragment_or_variable  go to state 23
+    comma_arguments       go to state 77
+
+
+State 60
+
+   38 fragment: BEGIN_PAREN expression END_PAREN .
+
+    $default  reduce using rule 38 (fragment)
+
+
+State 61
+
+   30 fragment: . fragment_or_variable
+   31         | . number
+   32         | . MINUS
+   33         | . SINGLE_QUOTED
+   34         | . DOUBLE_QUOTED
+   35         | . DOLLAR VARIABLE
+   36         | . DOLLAR NUMBER
+   37         | . DOLLAR BEGIN_PAREN pipeline END_PAREN
+   38         | . BEGIN_PAREN expression END_PAREN
+   39 number: . NUMBER
+   48 fragment_or_variable: . FRAGMENT
+   49                     | . VARIABLE
+   50 expression: . fragment
+   51           | . expression ACCESS expression
+   51           | expression ACCESS . expression
+   52           | . expression BEGIN_PAREN comma_arguments END_PAREN
+   53           | . expression DIVIDE expression
+   54           | . expression MULTIPLY expression
+   55           | . expression ADD expression
+   56           | . expression WHITESPACE MINUS expression
+
+    DOLLAR         shift, and go to state 29
+    BEGIN_PAREN    shift, and go to state 3
+    MINUS          shift, and go to state 4
+    NUMBER         shift, and go to state 6
+    FRAGMENT       shift, and go to state 7
+    SINGLE_QUOTED  shift, and go to state 8
+    DOUBLE_QUOTED  shift, and go to state 9
+    VARIABLE       shift, and go to state 10
+
+    fragment              go to state 30
+    number                go to state 22
+    fragment_or_variable  go to state 23
+    expression            go to state 78
+
+
+State 62
+
+   30 fragment: . fragment_or_variable
+   31         | . number
+   32         | . MINUS
+   33         | . SINGLE_QUOTED
+   34         | . DOUBLE_QUOTED
+   35         | . DOLLAR VARIABLE
+   36         | . DOLLAR NUMBER
+   37         | . DOLLAR BEGIN_PAREN pipeline END_PAREN
+   38         | . BEGIN_PAREN expression END_PAREN
+   39 number: . NUMBER
+   48 fragment_or_variable: . FRAGMENT
+   49                     | . VARIABLE
+   50 expression: . fragment
+   51           | . expression ACCESS expression
+   52           | . expression BEGIN_PAREN comma_arguments END_PAREN
+   53           | . expression DIVIDE expression
+   54           | . expression MULTIPLY expression
+   55           | . expression ADD expression
+   55           | expression ADD . expression
+   56           | . expression WHITESPACE MINUS expression
+
+    DOLLAR         shift, and go to state 29
+    BEGIN_PAREN    shift, and go to state 3
+    MINUS          shift, and go to state 4
+    NUMBER         shift, and go to state 6
+    FRAGMENT       shift, and go to state 7
+    SINGLE_QUOTED  shift, and go to state 8
+    DOUBLE_QUOTED  shift, and go to state 9
+    VARIABLE       shift, and go to state 10
+
+    fragment              go to state 30
+    number                go to state 22
+    fragment_or_variable  go to state 23
+    expression            go to state 79
+
+
+State 63
+
+   30 fragment: . fragment_or_variable
+   31         | . number
+   32         | . MINUS
+   33         | . SINGLE_QUOTED
+   34         | . DOUBLE_QUOTED
+   35         | . DOLLAR VARIABLE
+   36         | . DOLLAR NUMBER
+   37         | . DOLLAR BEGIN_PAREN pipeline END_PAREN
+   38         | . BEGIN_PAREN expression END_PAREN
+   39 number: . NUMBER
+   48 fragment_or_variable: . FRAGMENT
+   49                     | . VARIABLE
+   50 expression: . fragment
+   51           | . expression ACCESS expression
+   52           | . expression BEGIN_PAREN comma_arguments END_PAREN
+   53           | . expression DIVIDE expression
+   54           | . expression MULTIPLY expression
+   54           | expression MULTIPLY . expression
+   55           | . expression ADD expression
+   56           | . expression WHITESPACE MINUS expression
+
+    DOLLAR         shift, and go to state 29
+    BEGIN_PAREN    shift, and go to state 3
+    MINUS          shift, and go to state 4
+    NUMBER         shift, and go to state 6
+    FRAGMENT       shift, and go to state 7
+    SINGLE_QUOTED  shift, and go to state 8
+    DOUBLE_QUOTED  shift, and go to state 9
+    VARIABLE       shift, and go to state 10
+
+    fragment              go to state 30
+    number                go to state 22
+    fragment_or_variable  go to state 23
+    expression            go to state 80
+
+
+State 64
+
+   30 fragment: . fragment_or_variable
+   31         | . number
+   32         | . MINUS
+   33         | . SINGLE_QUOTED
+   34         | . DOUBLE_QUOTED
+   35         | . DOLLAR VARIABLE
+   36         | . DOLLAR NUMBER
+   37         | . DOLLAR BEGIN_PAREN pipeline END_PAREN
+   38         | . BEGIN_PAREN expression END_PAREN
+   39 number: . NUMBER
+   48 fragment_or_variable: . FRAGMENT
+   49                     | . VARIABLE
+   50 expression: . fragment
+   51           | . expression ACCESS expression
+   52           | . expression BEGIN_PAREN comma_arguments END_PAREN
+   53           | . expression DIVIDE expression
+   53           | expression DIVIDE . expression
+   54           | . expression MULTIPLY expression
+   55           | . expression ADD expression
+   56           | . expression WHITESPACE MINUS expression
+
+    DOLLAR         shift, and go to state 29
+    BEGIN_PAREN    shift, and go to state 3
+    MINUS          shift, and go to state 4
+    NUMBER         shift, and go to state 6
+    FRAGMENT       shift, and go to state 7
+    SINGLE_QUOTED  shift, and go to state 8
+    DOUBLE_QUOTED  shift, and go to state 9
+    VARIABLE       shift, and go to state 10
+
+    fragment              go to state 30
+    number                go to state 22
+    fragment_or_variable  go to state 23
+    expression            go to state 81
+
+
+State 65
+
+    6 optional_whitespace: .  [BEGIN_BRACE]
+    7                    | . WHITESPACE
+    8                    | . TERMINATING_NEWLINE
+   12 statement: KEYWORD_IF optional_whitespace fragment . optional_whitespace BEGIN_BRACE statements END_BRACE KEYWORD_ELSE BEGIN_BRACE statements END_BRACE
+   13          | KEYWORD_IF optional_whitespace fragment . optional_whitespace BEGIN_BRACE statements END_BRACE
+
+    WHITESPACE           shift, and go to state 32
+    TERMINATING_NEWLINE  shift, and go to state 33
+
+    $default  reduce using rule 6 (optional_whitespace)
+
+    optional_whitespace  go to state 82
+
+
+State 66
+
+    3 statements: statements terminator statement .
+
+    $default  reduce using rule 3 (statements)
+
+
+State 67
+
+   17 pipeline: pipeline PIPE instruction .
+
+    $default  reduce using rule 17 (pipeline)
+
+
 State 68
 
-   16 key_values: fragment_or_variable EQUALS fragment .
+   26 arguments: arguments WHITESPACE fragments .  [$end, WHITESPACE, TERMINATING_NEWLINE, PIPE, END_PAREN, END_BRACE, SEMICOLON, AMPERSAND]
+   28 fragments: fragments . fragment
+   29          | fragments . keyword_as_string
+   30 fragment: . fragment_or_variable
+   31         | . number
+   32         | . MINUS
+   33         | . SINGLE_QUOTED
+   34         | . DOUBLE_QUOTED
+   35         | . DOLLAR VARIABLE
+   36         | . DOLLAR NUMBER
+   37         | . DOLLAR BEGIN_PAREN pipeline END_PAREN
+   38         | . BEGIN_PAREN expression END_PAREN
+   39 number: . NUMBER
+   40 keyword_as_string: . KEYWORD_IF
+   41                  | . KEYWORD_ELSE
+   42                  | . KEYWORD_WHILE
+   43                  | . KEYWORD_FOR
+   44                  | . KEYWORD_FOREACH
+   45                  | . KEYWORD_DO
+   46                  | . KEYWORD_BREAK
+   47                  | . KEYWORD_CONTINUE
+   48 fragment_or_variable: . FRAGMENT
+   49                     | . VARIABLE
 
-    $default  reduce using rule 16 (key_values)
+    DOLLAR            shift, and go to state 29
+    BEGIN_PAREN       shift, and go to state 3
+    MINUS             shift, and go to state 4
+    KEYWORD_WHILE     shift, and go to state 42
+    KEYWORD_DO        shift, and go to state 43
+    KEYWORD_FOR       shift, and go to state 44
+    KEYWORD_FOREACH   shift, and go to state 45
+    KEYWORD_BREAK     shift, and go to state 46
+    KEYWORD_CONTINUE  shift, and go to state 47
+    KEYWORD_IF        shift, and go to state 48
+    KEYWORD_ELSE      shift, and go to state 49
+    NUMBER            shift, and go to state 6
+    FRAGMENT          shift, and go to state 7
+    SINGLE_QUOTED     shift, and go to state 8
+    DOUBLE_QUOTED     shift, and go to state 9
+    VARIABLE          shift, and go to state 10
+
+    $default  reduce using rule 26 (arguments)
+
+    fragment              go to state 50
+    number                go to state 22
+    keyword_as_string     go to state 51
+    fragment_or_variable  go to state 23
 
 
 State 69
 
-   36 expression: expression BEGIN_PAREN comma_arguments END_PAREN .
+   20 capture: PERCENT BEGIN_PAREN command END_PAREN .
 
-    $default  reduce using rule 36 (expression)
+    $default  reduce using rule 20 (capture)
 
 
 State 70
 
-   21 fragments: . fragment
-   22          | . fragments fragment
-   23 fragment: . fragment_or_variable
-   24         | . number
-   25         | . MINUS
-   26         | . SINGLE_QUOTED
-   27         | . DOUBLE_QUOTED
-   28         | . DOLLAR VARIABLE
-   29         | . DOLLAR BEGIN_PAREN pipeline END_PAREN
-   30         | . BEGIN_PAREN expression END_PAREN
-   31 number: . NUMBER
-   32 fragment_or_variable: . FRAGMENT
-   33                     | . VARIABLE
-   42 comma_arguments: comma_arguments COMMA . fragments
+   21 capture: PERCENT BEGIN_SQUARE key_values END_SQUARE . BEGIN_PAREN command END_PAREN
 
-    DOLLAR         shift, and go to state 26
-    BEGIN_PAREN    shift, and go to state 3
-    MINUS          shift, and go to state 4
-    NUMBER         shift, and go to state 5
-    FRAGMENT       shift, and go to state 6
-    SINGLE_QUOTED  shift, and go to state 7
-    DOUBLE_QUOTED  shift, and go to state 8
-    VARIABLE       shift, and go to state 9
-
-    fragments             go to state 73
-    fragment              go to state 19
-    number                go to state 20
-    fragment_or_variable  go to state 21
+    BEGIN_PAREN  shift, and go to state 83
 
 
 State 71
 
-   15 capture: PERCENT BEGIN_SQUARE key_values END_SQUARE BEGIN_PAREN command . END_PAREN
+   23 key_values: key_values COMMA . fragment_or_variable EQUALS fragment
+   48 fragment_or_variable: . FRAGMENT
+   49                     | . VARIABLE
 
-    END_PAREN  shift, and go to state 74
+    FRAGMENT  shift, and go to state 7
+    VARIABLE  shift, and go to state 10
+
+    fragment_or_variable  go to state 84
 
 
 State 72
 
-   17 key_values: key_values COMMA fragment_or_variable EQUALS . fragment
-   23 fragment: . fragment_or_variable
-   24         | . number
-   25         | . MINUS
-   26         | . SINGLE_QUOTED
-   27         | . DOUBLE_QUOTED
-   28         | . DOLLAR VARIABLE
-   29         | . DOLLAR BEGIN_PAREN pipeline END_PAREN
-   30         | . BEGIN_PAREN expression END_PAREN
-   31 number: . NUMBER
-   32 fragment_or_variable: . FRAGMENT
-   33                     | . VARIABLE
+   22 key_values: fragment_or_variable EQUALS . fragment
+   30 fragment: . fragment_or_variable
+   31         | . number
+   32         | . MINUS
+   33         | . SINGLE_QUOTED
+   34         | . DOUBLE_QUOTED
+   35         | . DOLLAR VARIABLE
+   36         | . DOLLAR NUMBER
+   37         | . DOLLAR BEGIN_PAREN pipeline END_PAREN
+   38         | . BEGIN_PAREN expression END_PAREN
+   39 number: . NUMBER
+   48 fragment_or_variable: . FRAGMENT
+   49                     | . VARIABLE
 
-    DOLLAR         shift, and go to state 26
+    DOLLAR         shift, and go to state 29
     BEGIN_PAREN    shift, and go to state 3
     MINUS          shift, and go to state 4
-    NUMBER         shift, and go to state 5
-    FRAGMENT       shift, and go to state 6
-    SINGLE_QUOTED  shift, and go to state 7
-    DOUBLE_QUOTED  shift, and go to state 8
-    VARIABLE       shift, and go to state 9
+    NUMBER         shift, and go to state 6
+    FRAGMENT       shift, and go to state 7
+    SINGLE_QUOTED  shift, and go to state 8
+    DOUBLE_QUOTED  shift, and go to state 9
+    VARIABLE       shift, and go to state 10
 
-    fragment              go to state 75
-    number                go to state 20
-    fragment_or_variable  go to state 21
+    fragment              go to state 85
+    number                go to state 22
+    fragment_or_variable  go to state 23
 
 
 State 73
 
-   22 fragments: fragments . fragment
-   23 fragment: . fragment_or_variable
-   24         | . number
-   25         | . MINUS
-   26         | . SINGLE_QUOTED
-   27         | . DOUBLE_QUOTED
-   28         | . DOLLAR VARIABLE
-   29         | . DOLLAR BEGIN_PAREN pipeline END_PAREN
-   30         | . BEGIN_PAREN expression END_PAREN
-   31 number: . NUMBER
-   32 fragment_or_variable: . FRAGMENT
-   33                     | . VARIABLE
-   42 comma_arguments: comma_arguments COMMA fragments .  [END_PAREN, COMMA]
+   37 fragment: DOLLAR BEGIN_PAREN pipeline END_PAREN .
 
-    DOLLAR         shift, and go to state 26
-    BEGIN_PAREN    shift, and go to state 3
-    MINUS          shift, and go to state 4
-    NUMBER         shift, and go to state 5
-    FRAGMENT       shift, and go to state 6
-    SINGLE_QUOTED  shift, and go to state 7
-    DOUBLE_QUOTED  shift, and go to state 8
-    VARIABLE       shift, and go to state 9
-
-    $default  reduce using rule 42 (comma_arguments)
-
-    fragment              go to state 36
-    number                go to state 20
-    fragment_or_variable  go to state 21
+    $default  reduce using rule 37 (fragment)
 
 
 State 74
 
-   15 capture: PERCENT BEGIN_SQUARE key_values END_SQUARE BEGIN_PAREN command END_PAREN .
+   15 assignment: DOLLAR VARIABLE EQUALS fragments .  [$end, TERMINATING_NEWLINE, END_BRACE, SEMICOLON]
+   28 fragments: fragments . fragment
+   29          | fragments . keyword_as_string
+   30 fragment: . fragment_or_variable
+   31         | . number
+   32         | . MINUS
+   33         | . SINGLE_QUOTED
+   34         | . DOUBLE_QUOTED
+   35         | . DOLLAR VARIABLE
+   36         | . DOLLAR NUMBER
+   37         | . DOLLAR BEGIN_PAREN pipeline END_PAREN
+   38         | . BEGIN_PAREN expression END_PAREN
+   39 number: . NUMBER
+   40 keyword_as_string: . KEYWORD_IF
+   41                  | . KEYWORD_ELSE
+   42                  | . KEYWORD_WHILE
+   43                  | . KEYWORD_FOR
+   44                  | . KEYWORD_FOREACH
+   45                  | . KEYWORD_DO
+   46                  | . KEYWORD_BREAK
+   47                  | . KEYWORD_CONTINUE
+   48 fragment_or_variable: . FRAGMENT
+   49                     | . VARIABLE
 
-    $default  reduce using rule 15 (capture)
+    DOLLAR            shift, and go to state 29
+    BEGIN_PAREN       shift, and go to state 3
+    MINUS             shift, and go to state 4
+    KEYWORD_WHILE     shift, and go to state 42
+    KEYWORD_DO        shift, and go to state 43
+    KEYWORD_FOR       shift, and go to state 44
+    KEYWORD_FOREACH   shift, and go to state 45
+    KEYWORD_BREAK     shift, and go to state 46
+    KEYWORD_CONTINUE  shift, and go to state 47
+    KEYWORD_IF        shift, and go to state 48
+    KEYWORD_ELSE      shift, and go to state 49
+    NUMBER            shift, and go to state 6
+    FRAGMENT          shift, and go to state 7
+    SINGLE_QUOTED     shift, and go to state 8
+    DOUBLE_QUOTED     shift, and go to state 9
+    VARIABLE          shift, and go to state 10
+
+    $default  reduce using rule 15 (assignment)
+
+    fragment              go to state 50
+    number                go to state 22
+    keyword_as_string     go to state 51
+    fragment_or_variable  go to state 23
 
 
 State 75
 
-   17 key_values: key_values COMMA fragment_or_variable EQUALS fragment .
+   30 fragment: . fragment_or_variable
+   31         | . number
+   32         | . MINUS
+   33         | . SINGLE_QUOTED
+   34         | . DOUBLE_QUOTED
+   35         | . DOLLAR VARIABLE
+   36         | . DOLLAR NUMBER
+   37         | . DOLLAR BEGIN_PAREN pipeline END_PAREN
+   38         | . BEGIN_PAREN expression END_PAREN
+   39 number: . NUMBER
+   48 fragment_or_variable: . FRAGMENT
+   49                     | . VARIABLE
+   50 expression: . fragment
+   51           | . expression ACCESS expression
+   52           | . expression BEGIN_PAREN comma_arguments END_PAREN
+   53           | . expression DIVIDE expression
+   54           | . expression MULTIPLY expression
+   55           | . expression ADD expression
+   56           | . expression WHITESPACE MINUS expression
+   56           | expression WHITESPACE MINUS . expression
 
-    $default  reduce using rule 17 (key_values)
+    DOLLAR         shift, and go to state 29
+    BEGIN_PAREN    shift, and go to state 3
+    MINUS          shift, and go to state 4
+    NUMBER         shift, and go to state 6
+    FRAGMENT       shift, and go to state 7
+    SINGLE_QUOTED  shift, and go to state 8
+    DOUBLE_QUOTED  shift, and go to state 9
+    VARIABLE       shift, and go to state 10
+
+    fragment              go to state 30
+    number                go to state 22
+    fragment_or_variable  go to state 23
+    expression            go to state 86
+
+
+State 76
+
+   28 fragments: fragments . fragment
+   29          | fragments . keyword_as_string
+   30 fragment: . fragment_or_variable
+   31         | . number
+   32         | . MINUS
+   33         | . SINGLE_QUOTED
+   34         | . DOUBLE_QUOTED
+   35         | . DOLLAR VARIABLE
+   36         | . DOLLAR NUMBER
+   37         | . DOLLAR BEGIN_PAREN pipeline END_PAREN
+   38         | . BEGIN_PAREN expression END_PAREN
+   39 number: . NUMBER
+   40 keyword_as_string: . KEYWORD_IF
+   41                  | . KEYWORD_ELSE
+   42                  | . KEYWORD_WHILE
+   43                  | . KEYWORD_FOR
+   44                  | . KEYWORD_FOREACH
+   45                  | . KEYWORD_DO
+   46                  | . KEYWORD_BREAK
+   47                  | . KEYWORD_CONTINUE
+   48 fragment_or_variable: . FRAGMENT
+   49                     | . VARIABLE
+   57 comma_arguments: fragments .  [END_PAREN, COMMA]
+
+    DOLLAR            shift, and go to state 29
+    BEGIN_PAREN       shift, and go to state 3
+    MINUS             shift, and go to state 4
+    KEYWORD_WHILE     shift, and go to state 42
+    KEYWORD_DO        shift, and go to state 43
+    KEYWORD_FOR       shift, and go to state 44
+    KEYWORD_FOREACH   shift, and go to state 45
+    KEYWORD_BREAK     shift, and go to state 46
+    KEYWORD_CONTINUE  shift, and go to state 47
+    KEYWORD_IF        shift, and go to state 48
+    KEYWORD_ELSE      shift, and go to state 49
+    NUMBER            shift, and go to state 6
+    FRAGMENT          shift, and go to state 7
+    SINGLE_QUOTED     shift, and go to state 8
+    DOUBLE_QUOTED     shift, and go to state 9
+    VARIABLE          shift, and go to state 10
+
+    $default  reduce using rule 57 (comma_arguments)
+
+    fragment              go to state 50
+    number                go to state 22
+    keyword_as_string     go to state 51
+    fragment_or_variable  go to state 23
+
+
+State 77
+
+   52 expression: expression BEGIN_PAREN comma_arguments . END_PAREN
+   58 comma_arguments: comma_arguments . COMMA fragments
+
+    END_PAREN  shift, and go to state 87
+    COMMA      shift, and go to state 88
+
+
+State 78
+
+   51 expression: expression . ACCESS expression
+   51           | expression ACCESS expression .  [WHITESPACE, BEGIN_PAREN, END_PAREN, ADD, MULTIPLY, DIVIDE]
+   52           | expression . BEGIN_PAREN comma_arguments END_PAREN
+   53           | expression . DIVIDE expression
+   54           | expression . MULTIPLY expression
+   55           | expression . ADD expression
+   56           | expression . WHITESPACE MINUS expression
+
+    ACCESS  error (nonassociative)
+
+    $default  reduce using rule 51 (expression)
+
+    Conflict between rule 51 and token WHITESPACE resolved as reduce (WHITESPACE < ACCESS).
+    Conflict between rule 51 and token BEGIN_PAREN resolved as reduce (BEGIN_PAREN < ACCESS).
+    Conflict between rule 51 and token ACCESS resolved as an error (%nonassoc ACCESS).
+    Conflict between rule 51 and token ADD resolved as reduce (ADD < ACCESS).
+    Conflict between rule 51 and token MULTIPLY resolved as reduce (MULTIPLY < ACCESS).
+    Conflict between rule 51 and token DIVIDE resolved as reduce (DIVIDE < ACCESS).
+
+
+State 79
+
+   51 expression: expression . ACCESS expression
+   52           | expression . BEGIN_PAREN comma_arguments END_PAREN
+   53           | expression . DIVIDE expression
+   54           | expression . MULTIPLY expression
+   55           | expression . ADD expression
+   55           | expression ADD expression .  [WHITESPACE, END_PAREN, ADD]
+   56           | expression . WHITESPACE MINUS expression
+
+    BEGIN_PAREN  shift, and go to state 59
+    ACCESS       shift, and go to state 61
+    MULTIPLY     shift, and go to state 63
+    DIVIDE       shift, and go to state 64
+
+    $default  reduce using rule 55 (expression)
+
+    Conflict between rule 55 and token WHITESPACE resolved as reduce (WHITESPACE < ADD).
+    Conflict between rule 55 and token BEGIN_PAREN resolved as shift (ADD < BEGIN_PAREN).
+    Conflict between rule 55 and token ACCESS resolved as shift (ADD < ACCESS).
+    Conflict between rule 55 and token ADD resolved as reduce (%left ADD).
+    Conflict between rule 55 and token MULTIPLY resolved as shift (ADD < MULTIPLY).
+    Conflict between rule 55 and token DIVIDE resolved as shift (ADD < DIVIDE).
+
+
+State 80
+
+   51 expression: expression . ACCESS expression
+   52           | expression . BEGIN_PAREN comma_arguments END_PAREN
+   53           | expression . DIVIDE expression
+   54           | expression . MULTIPLY expression
+   54           | expression MULTIPLY expression .  [WHITESPACE, END_PAREN, ADD, MULTIPLY, DIVIDE]
+   55           | expression . ADD expression
+   56           | expression . WHITESPACE MINUS expression
+
+    BEGIN_PAREN  shift, and go to state 59
+    ACCESS       shift, and go to state 61
+
+    $default  reduce using rule 54 (expression)
+
+    Conflict between rule 54 and token WHITESPACE resolved as reduce (WHITESPACE < MULTIPLY).
+    Conflict between rule 54 and token BEGIN_PAREN resolved as shift (MULTIPLY < BEGIN_PAREN).
+    Conflict between rule 54 and token ACCESS resolved as shift (MULTIPLY < ACCESS).
+    Conflict between rule 54 and token ADD resolved as reduce (ADD < MULTIPLY).
+    Conflict between rule 54 and token MULTIPLY resolved as reduce (%left MULTIPLY).
+    Conflict between rule 54 and token DIVIDE resolved as reduce (%left DIVIDE).
+
+
+State 81
+
+   51 expression: expression . ACCESS expression
+   52           | expression . BEGIN_PAREN comma_arguments END_PAREN
+   53           | expression . DIVIDE expression
+   53           | expression DIVIDE expression .  [WHITESPACE, END_PAREN, ADD, MULTIPLY, DIVIDE]
+   54           | expression . MULTIPLY expression
+   55           | expression . ADD expression
+   56           | expression . WHITESPACE MINUS expression
+
+    BEGIN_PAREN  shift, and go to state 59
+    ACCESS       shift, and go to state 61
+
+    $default  reduce using rule 53 (expression)
+
+    Conflict between rule 53 and token WHITESPACE resolved as reduce (WHITESPACE < DIVIDE).
+    Conflict between rule 53 and token BEGIN_PAREN resolved as shift (DIVIDE < BEGIN_PAREN).
+    Conflict between rule 53 and token ACCESS resolved as shift (DIVIDE < ACCESS).
+    Conflict between rule 53 and token ADD resolved as reduce (ADD < DIVIDE).
+    Conflict between rule 53 and token MULTIPLY resolved as reduce (%left MULTIPLY).
+    Conflict between rule 53 and token DIVIDE resolved as reduce (%left DIVIDE).
+
+
+State 82
+
+   12 statement: KEYWORD_IF optional_whitespace fragment optional_whitespace . BEGIN_BRACE statements END_BRACE KEYWORD_ELSE BEGIN_BRACE statements END_BRACE
+   13          | KEYWORD_IF optional_whitespace fragment optional_whitespace . BEGIN_BRACE statements END_BRACE
+
+    BEGIN_BRACE  shift, and go to state 89
+
+
+State 83
+
+   21 capture: PERCENT BEGIN_SQUARE key_values END_SQUARE BEGIN_PAREN . command END_PAREN
+   24 command: . arguments
+   25 arguments: . fragments
+   26          | . arguments WHITESPACE fragments
+   27 fragments: . fragment
+   28          | . fragments fragment
+   29          | . fragments keyword_as_string
+   30 fragment: . fragment_or_variable
+   31         | . number
+   32         | . MINUS
+   33         | . SINGLE_QUOTED
+   34         | . DOUBLE_QUOTED
+   35         | . DOLLAR VARIABLE
+   36         | . DOLLAR NUMBER
+   37         | . DOLLAR BEGIN_PAREN pipeline END_PAREN
+   38         | . BEGIN_PAREN expression END_PAREN
+   39 number: . NUMBER
+   48 fragment_or_variable: . FRAGMENT
+   49                     | . VARIABLE
+
+    DOLLAR         shift, and go to state 29
+    BEGIN_PAREN    shift, and go to state 3
+    MINUS          shift, and go to state 4
+    NUMBER         shift, and go to state 6
+    FRAGMENT       shift, and go to state 7
+    SINGLE_QUOTED  shift, and go to state 8
+    DOUBLE_QUOTED  shift, and go to state 9
+    VARIABLE       shift, and go to state 10
+
+    command               go to state 90
+    arguments             go to state 19
+    fragments             go to state 20
+    fragment              go to state 21
+    number                go to state 22
+    fragment_or_variable  go to state 23
+
+
+State 84
+
+   23 key_values: key_values COMMA fragment_or_variable . EQUALS fragment
+
+    EQUALS  shift, and go to state 91
+
+
+State 85
+
+   22 key_values: fragment_or_variable EQUALS fragment .
+
+    $default  reduce using rule 22 (key_values)
+
+
+State 86
+
+   51 expression: expression . ACCESS expression
+   52           | expression . BEGIN_PAREN comma_arguments END_PAREN
+   53           | expression . DIVIDE expression
+   54           | expression . MULTIPLY expression
+   55           | expression . ADD expression
+   56           | expression . WHITESPACE MINUS expression
+   56           | expression WHITESPACE MINUS expression .  [WHITESPACE, END_PAREN, ADD]
+
+    BEGIN_PAREN  shift, and go to state 59
+    ACCESS       shift, and go to state 61
+    MULTIPLY     shift, and go to state 63
+    DIVIDE       shift, and go to state 64
+
+    $default  reduce using rule 56 (expression)
+
+    Conflict between rule 56 and token WHITESPACE resolved as reduce (WHITESPACE < MINUS).
+    Conflict between rule 56 and token BEGIN_PAREN resolved as shift (MINUS < BEGIN_PAREN).
+    Conflict between rule 56 and token ACCESS resolved as shift (MINUS < ACCESS).
+    Conflict between rule 56 and token ADD resolved as reduce (%left ADD).
+    Conflict between rule 56 and token MULTIPLY resolved as shift (MINUS < MULTIPLY).
+    Conflict between rule 56 and token DIVIDE resolved as shift (MINUS < DIVIDE).
+
+
+State 87
+
+   52 expression: expression BEGIN_PAREN comma_arguments END_PAREN .
+
+    $default  reduce using rule 52 (expression)
+
+
+State 88
+
+   27 fragments: . fragment
+   28          | . fragments fragment
+   29          | . fragments keyword_as_string
+   30 fragment: . fragment_or_variable
+   31         | . number
+   32         | . MINUS
+   33         | . SINGLE_QUOTED
+   34         | . DOUBLE_QUOTED
+   35         | . DOLLAR VARIABLE
+   36         | . DOLLAR NUMBER
+   37         | . DOLLAR BEGIN_PAREN pipeline END_PAREN
+   38         | . BEGIN_PAREN expression END_PAREN
+   39 number: . NUMBER
+   48 fragment_or_variable: . FRAGMENT
+   49                     | . VARIABLE
+   58 comma_arguments: comma_arguments COMMA . fragments
+
+    DOLLAR         shift, and go to state 29
+    BEGIN_PAREN    shift, and go to state 3
+    MINUS          shift, and go to state 4
+    NUMBER         shift, and go to state 6
+    FRAGMENT       shift, and go to state 7
+    SINGLE_QUOTED  shift, and go to state 8
+    DOUBLE_QUOTED  shift, and go to state 9
+    VARIABLE       shift, and go to state 10
+
+    fragments             go to state 92
+    fragment              go to state 21
+    number                go to state 22
+    fragment_or_variable  go to state 23
+
+
+State 89
+
+    2 statements: . statement
+    3           | . statements terminator statement
+    9 statement: . pipeline AMPERSAND
+   10          | . pipeline
+   11          | . assignment
+   12          | . KEYWORD_IF optional_whitespace fragment optional_whitespace BEGIN_BRACE statements END_BRACE KEYWORD_ELSE BEGIN_BRACE statements END_BRACE
+   12          | KEYWORD_IF optional_whitespace fragment optional_whitespace BEGIN_BRACE . statements END_BRACE KEYWORD_ELSE BEGIN_BRACE statements END_BRACE
+   13          | . KEYWORD_IF optional_whitespace fragment optional_whitespace BEGIN_BRACE statements END_BRACE
+   13          | KEYWORD_IF optional_whitespace fragment optional_whitespace BEGIN_BRACE . statements END_BRACE
+   14          | .  [TERMINATING_NEWLINE, END_BRACE, SEMICOLON]
+   15 assignment: . DOLLAR VARIABLE EQUALS fragments
+   16 pipeline: . instruction
+   17         | . pipeline PIPE instruction
+   18 instruction: . command
+   19            | . capture
+   20 capture: . PERCENT BEGIN_PAREN command END_PAREN
+   21        | . PERCENT BEGIN_SQUARE key_values END_SQUARE BEGIN_PAREN command END_PAREN
+   24 command: . arguments
+   25 arguments: . fragments
+   26          | . arguments WHITESPACE fragments
+   27 fragments: . fragment
+   28          | . fragments fragment
+   29          | . fragments keyword_as_string
+   30 fragment: . fragment_or_variable
+   31         | . number
+   32         | . MINUS
+   33         | . SINGLE_QUOTED
+   34         | . DOUBLE_QUOTED
+   35         | . DOLLAR VARIABLE
+   36         | . DOLLAR NUMBER
+   37         | . DOLLAR BEGIN_PAREN pipeline END_PAREN
+   38         | . BEGIN_PAREN expression END_PAREN
+   39 number: . NUMBER
+   48 fragment_or_variable: . FRAGMENT
+   49                     | . VARIABLE
+
+    PERCENT        shift, and go to state 1
+    DOLLAR         shift, and go to state 2
+    BEGIN_PAREN    shift, and go to state 3
+    MINUS          shift, and go to state 4
+    KEYWORD_IF     shift, and go to state 5
+    NUMBER         shift, and go to state 6
+    FRAGMENT       shift, and go to state 7
+    SINGLE_QUOTED  shift, and go to state 8
+    DOUBLE_QUOTED  shift, and go to state 9
+    VARIABLE       shift, and go to state 10
+
+    $default  reduce using rule 14 (statement)
+
+    statements            go to state 93
+    statement             go to state 13
+    assignment            go to state 14
+    pipeline              go to state 15
+    instruction           go to state 16
+    capture               go to state 17
+    command               go to state 18
+    arguments             go to state 19
+    fragments             go to state 20
+    fragment              go to state 21
+    number                go to state 22
+    fragment_or_variable  go to state 23
+
+
+State 90
+
+   21 capture: PERCENT BEGIN_SQUARE key_values END_SQUARE BEGIN_PAREN command . END_PAREN
+
+    END_PAREN  shift, and go to state 94
+
+
+State 91
+
+   23 key_values: key_values COMMA fragment_or_variable EQUALS . fragment
+   30 fragment: . fragment_or_variable
+   31         | . number
+   32         | . MINUS
+   33         | . SINGLE_QUOTED
+   34         | . DOUBLE_QUOTED
+   35         | . DOLLAR VARIABLE
+   36         | . DOLLAR NUMBER
+   37         | . DOLLAR BEGIN_PAREN pipeline END_PAREN
+   38         | . BEGIN_PAREN expression END_PAREN
+   39 number: . NUMBER
+   48 fragment_or_variable: . FRAGMENT
+   49                     | . VARIABLE
+
+    DOLLAR         shift, and go to state 29
+    BEGIN_PAREN    shift, and go to state 3
+    MINUS          shift, and go to state 4
+    NUMBER         shift, and go to state 6
+    FRAGMENT       shift, and go to state 7
+    SINGLE_QUOTED  shift, and go to state 8
+    DOUBLE_QUOTED  shift, and go to state 9
+    VARIABLE       shift, and go to state 10
+
+    fragment              go to state 95
+    number                go to state 22
+    fragment_or_variable  go to state 23
+
+
+State 92
+
+   28 fragments: fragments . fragment
+   29          | fragments . keyword_as_string
+   30 fragment: . fragment_or_variable
+   31         | . number
+   32         | . MINUS
+   33         | . SINGLE_QUOTED
+   34         | . DOUBLE_QUOTED
+   35         | . DOLLAR VARIABLE
+   36         | . DOLLAR NUMBER
+   37         | . DOLLAR BEGIN_PAREN pipeline END_PAREN
+   38         | . BEGIN_PAREN expression END_PAREN
+   39 number: . NUMBER
+   40 keyword_as_string: . KEYWORD_IF
+   41                  | . KEYWORD_ELSE
+   42                  | . KEYWORD_WHILE
+   43                  | . KEYWORD_FOR
+   44                  | . KEYWORD_FOREACH
+   45                  | . KEYWORD_DO
+   46                  | . KEYWORD_BREAK
+   47                  | . KEYWORD_CONTINUE
+   48 fragment_or_variable: . FRAGMENT
+   49                     | . VARIABLE
+   58 comma_arguments: comma_arguments COMMA fragments .  [END_PAREN, COMMA]
+
+    DOLLAR            shift, and go to state 29
+    BEGIN_PAREN       shift, and go to state 3
+    MINUS             shift, and go to state 4
+    KEYWORD_WHILE     shift, and go to state 42
+    KEYWORD_DO        shift, and go to state 43
+    KEYWORD_FOR       shift, and go to state 44
+    KEYWORD_FOREACH   shift, and go to state 45
+    KEYWORD_BREAK     shift, and go to state 46
+    KEYWORD_CONTINUE  shift, and go to state 47
+    KEYWORD_IF        shift, and go to state 48
+    KEYWORD_ELSE      shift, and go to state 49
+    NUMBER            shift, and go to state 6
+    FRAGMENT          shift, and go to state 7
+    SINGLE_QUOTED     shift, and go to state 8
+    DOUBLE_QUOTED     shift, and go to state 9
+    VARIABLE          shift, and go to state 10
+
+    $default  reduce using rule 58 (comma_arguments)
+
+    fragment              go to state 50
+    number                go to state 22
+    keyword_as_string     go to state 51
+    fragment_or_variable  go to state 23
+
+
+State 93
+
+    3 statements: statements . terminator statement
+    4 terminator: . TERMINATING_NEWLINE
+    5           | . SEMICOLON
+   12 statement: KEYWORD_IF optional_whitespace fragment optional_whitespace BEGIN_BRACE statements . END_BRACE KEYWORD_ELSE BEGIN_BRACE statements END_BRACE
+   13          | KEYWORD_IF optional_whitespace fragment optional_whitespace BEGIN_BRACE statements . END_BRACE
+
+    TERMINATING_NEWLINE  shift, and go to state 36
+    END_BRACE            shift, and go to state 96
+    SEMICOLON            shift, and go to state 37
+
+    terminator  go to state 38
+
+
+State 94
+
+   21 capture: PERCENT BEGIN_SQUARE key_values END_SQUARE BEGIN_PAREN command END_PAREN .
+
+    $default  reduce using rule 21 (capture)
+
+
+State 95
+
+   23 key_values: key_values COMMA fragment_or_variable EQUALS fragment .
+
+    $default  reduce using rule 23 (key_values)
+
+
+State 96
+
+   12 statement: KEYWORD_IF optional_whitespace fragment optional_whitespace BEGIN_BRACE statements END_BRACE . KEYWORD_ELSE BEGIN_BRACE statements END_BRACE
+   13          | KEYWORD_IF optional_whitespace fragment optional_whitespace BEGIN_BRACE statements END_BRACE .  [$end, TERMINATING_NEWLINE, END_BRACE, SEMICOLON]
+
+    KEYWORD_ELSE  shift, and go to state 97
+
+    $default  reduce using rule 13 (statement)
+
+
+State 97
+
+   12 statement: KEYWORD_IF optional_whitespace fragment optional_whitespace BEGIN_BRACE statements END_BRACE KEYWORD_ELSE . BEGIN_BRACE statements END_BRACE
+
+    BEGIN_BRACE  shift, and go to state 98
+
+
+State 98
+
+    2 statements: . statement
+    3           | . statements terminator statement
+    9 statement: . pipeline AMPERSAND
+   10          | . pipeline
+   11          | . assignment
+   12          | . KEYWORD_IF optional_whitespace fragment optional_whitespace BEGIN_BRACE statements END_BRACE KEYWORD_ELSE BEGIN_BRACE statements END_BRACE
+   12          | KEYWORD_IF optional_whitespace fragment optional_whitespace BEGIN_BRACE statements END_BRACE KEYWORD_ELSE BEGIN_BRACE . statements END_BRACE
+   13          | . KEYWORD_IF optional_whitespace fragment optional_whitespace BEGIN_BRACE statements END_BRACE
+   14          | .  [TERMINATING_NEWLINE, END_BRACE, SEMICOLON]
+   15 assignment: . DOLLAR VARIABLE EQUALS fragments
+   16 pipeline: . instruction
+   17         | . pipeline PIPE instruction
+   18 instruction: . command
+   19            | . capture
+   20 capture: . PERCENT BEGIN_PAREN command END_PAREN
+   21        | . PERCENT BEGIN_SQUARE key_values END_SQUARE BEGIN_PAREN command END_PAREN
+   24 command: . arguments
+   25 arguments: . fragments
+   26          | . arguments WHITESPACE fragments
+   27 fragments: . fragment
+   28          | . fragments fragment
+   29          | . fragments keyword_as_string
+   30 fragment: . fragment_or_variable
+   31         | . number
+   32         | . MINUS
+   33         | . SINGLE_QUOTED
+   34         | . DOUBLE_QUOTED
+   35         | . DOLLAR VARIABLE
+   36         | . DOLLAR NUMBER
+   37         | . DOLLAR BEGIN_PAREN pipeline END_PAREN
+   38         | . BEGIN_PAREN expression END_PAREN
+   39 number: . NUMBER
+   48 fragment_or_variable: . FRAGMENT
+   49                     | . VARIABLE
+
+    PERCENT        shift, and go to state 1
+    DOLLAR         shift, and go to state 2
+    BEGIN_PAREN    shift, and go to state 3
+    MINUS          shift, and go to state 4
+    KEYWORD_IF     shift, and go to state 5
+    NUMBER         shift, and go to state 6
+    FRAGMENT       shift, and go to state 7
+    SINGLE_QUOTED  shift, and go to state 8
+    DOUBLE_QUOTED  shift, and go to state 9
+    VARIABLE       shift, and go to state 10
+
+    $default  reduce using rule 14 (statement)
+
+    statements            go to state 99
+    statement             go to state 13
+    assignment            go to state 14
+    pipeline              go to state 15
+    instruction           go to state 16
+    capture               go to state 17
+    command               go to state 18
+    arguments             go to state 19
+    fragments             go to state 20
+    fragment              go to state 21
+    number                go to state 22
+    fragment_or_variable  go to state 23
+
+
+State 99
+
+    3 statements: statements . terminator statement
+    4 terminator: . TERMINATING_NEWLINE
+    5           | . SEMICOLON
+   12 statement: KEYWORD_IF optional_whitespace fragment optional_whitespace BEGIN_BRACE statements END_BRACE KEYWORD_ELSE BEGIN_BRACE statements . END_BRACE
+
+    TERMINATING_NEWLINE  shift, and go to state 36
+    END_BRACE            shift, and go to state 100
+    SEMICOLON            shift, and go to state 37
+
+    terminator  go to state 38
+
+
+State 100
+
+   12 statement: KEYWORD_IF optional_whitespace fragment optional_whitespace BEGIN_BRACE statements END_BRACE KEYWORD_ELSE BEGIN_BRACE statements END_BRACE .
+
+    $default  reduce using rule 12 (statement)

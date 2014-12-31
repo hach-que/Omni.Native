@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <assert.h>
 
-struct tagbstring node_type_root = bsStatic("root");
+struct tagbstring node_type_root = bsStatic("statements");
 struct tagbstring node_type_statement = bsStatic("statement");
 struct tagbstring node_type_pipeline = bsStatic("pipeline");
 struct tagbstring node_type_instruction = bsStatic("instruction");
@@ -27,6 +27,14 @@ struct tagbstring node_type_divide = bsStatic("divide");
 struct tagbstring node_type_multiply = bsStatic("multiply");
 struct tagbstring node_type_add = bsStatic("add");
 struct tagbstring node_type_minus = bsStatic("minus");
+struct tagbstring node_type_if = bsStatic("if");
+struct tagbstring node_type_else = bsStatic("else");
+struct tagbstring node_type_while = bsStatic("while");
+struct tagbstring node_type_for = bsStatic("for");
+struct tagbstring node_type_foreach = bsStatic("foreach");
+struct tagbstring node_type_do = bsStatic("do");
+struct tagbstring node_type_break = bsStatic("break");
+struct tagbstring node_type_continue = bsStatic("continue");
 
 struct tagbstring pipeline_type_foreground = bsStatic("foreground");
 struct tagbstring pipeline_type_background = bsStatic("background");

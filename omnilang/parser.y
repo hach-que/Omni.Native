@@ -40,16 +40,18 @@ ast_node* ast_root;
 %token <token> TOKEN WHITESPACE CONTINUING_NEWLINE TERMINATING_NEWLINE PIPE
 %token <token> PERCENT DOLLAR BEGIN_PAREN END_PAREN EQUALS BEGIN_SQUARE END_SQUARE
 %token <token> BEGIN_BRACE END_BRACE COMMA COMMAND_PIPE SEMICOLON AMPERSAND ERROR
-%token <token> ACCESS MAP MINUS ADD MULTIPLY DIVIDE
+%token <token> ACCESS MAP MINUS ADD MULTIPLY DIVIDE 
+%token <string> KEYWORD_WHILE KEYWORD_DO KEYWORD_FOR KEYWORD_FOREACH KEYWORD_BREAK
+%token <string> KEYWORD_CONTINUE KEYWORD_IF KEYWORD_ELSE
 %token <number> NUMBER
 %token <string> FRAGMENT SINGLE_QUOTED DOUBLE_QUOTED VARIABLE
 
-%type <string> fragment_or_variable
+%type <string> fragment_or_variable keyword_as_string
 %type <node> root statement pipeline instruction
 %type <node> command arguments fragment fragments
 %type <node> capture assignment comma_arguments
-%type <node> key_values expression number
-%type <token> terminator
+%type <node> key_values expression number statements
+%type <token> terminator optional_whitespace
 
 %nonassoc PIPE
 %nonassoc AMPERSAND
@@ -59,6 +61,9 @@ ast_node* ast_root;
 %left MULTIPLY DIVIDE
 %left BEGIN_PAREN
 %nonassoc ACCESS
+//%right KEYWORD_IF 
+//%right KEYWORD_ELSE
+//%nonassoc TERMINATING_NEWLINE
 
 %start root
 
@@ -67,17 +72,22 @@ ast_node* ast_root;
 %%
 
 root:
+  statements
+  {
+    ast_root = VALUE_NODE($1);
+  } ;
+
+statements:
   statement
   {
-    ast_root = ast_node_create(&node_type_root);
-    VALUE_NODE($$) = ast_root;
+    VALUE_NODE($$) = ast_node_create(&node_type_root);
     
     if (VALUE_NODE($1) != NULL) {
       ast_node_append_child(VALUE_NODE($$), VALUE_NODE($1));
       ORIGINAL_NODE_NODE_APPEND($$, $1);
     }
   } |
-  root terminator statement
+  statements terminator statement
   {
     ORIGINAL_NODE_APPEND($1, $2);
       
@@ -85,12 +95,17 @@ root:
       ast_node_append_child(VALUE_NODE($1), VALUE_NODE($3));
       ORIGINAL_NODE_NODE_APPEND($1, $3);
     }
-  };
+  } ;
   
 terminator:
   TERMINATING_NEWLINE |
   SEMICOLON ;
 
+optional_whitespace:
+  /* empty */ |
+  WHITESPACE |
+  TERMINATING_NEWLINE ;
+  
 statement:
   pipeline AMPERSAND
   {
@@ -108,6 +123,20 @@ statement:
   {
     $$ = $1;
   } |
+  KEYWORD_IF optional_whitespace fragment optional_whitespace BEGIN_BRACE statements END_BRACE KEYWORD_ELSE BEGIN_BRACE statements END_BRACE
+  {
+    VALUE_NODE($$) = ast_node_create(&node_type_if);
+    ast_node_append_child(VALUE_NODE($$), VALUE_NODE($3));
+    ast_node_append_child(VALUE_NODE($$), VALUE_NODE($6));
+    ast_node_append_child(VALUE_NODE($$), VALUE_NODE($10));
+  } |
+  KEYWORD_IF optional_whitespace fragment optional_whitespace BEGIN_BRACE statements END_BRACE
+  {
+    VALUE_NODE($$) = ast_node_create(&node_type_if);
+    ast_node_append_child(VALUE_NODE($$), VALUE_NODE($3));
+    ast_node_append_child(VALUE_NODE($$), VALUE_NODE($6));
+  }
+  /* empty */ |
   {
     VALUE_NODE($$) = NULL;
   };
@@ -247,6 +276,17 @@ fragments:
     ast_node_append_child(VALUE_NODE($1), VALUE_NODE($2));
     
     ORIGINAL_NODE_NODE_APPEND($1, $2);
+  } |
+  fragments keyword_as_string
+  {
+    ast_node* fragment = ast_node_create(&node_type_fragment);
+    ast_node_set_string(fragment, bstrcpy(VALUE($2)));
+    
+    fragment->original = bstrcpy(VALUE($2));
+    
+    ast_node_append_child(VALUE_NODE($1), fragment);
+    
+    ORIGINAL_NODE_APPEND($1, $2);
   };
   
 fragment:
@@ -290,6 +330,14 @@ fragment:
     ORIGINAL_NODE_APPEND($$, $1);
     ORIGINAL_NODE_APPEND($$, $2);
   } |
+  DOLLAR NUMBER
+  {
+    VALUE_NODE($$) = ast_node_create(&node_type_variable);
+    ast_node_set_number(VALUE_NODE($$), VALUE($2));
+    
+    ORIGINAL_NODE_APPEND($$, $1);
+    ORIGINAL_NODE_APPEND($$, $2);
+  } |
   DOLLAR BEGIN_PAREN pipeline END_PAREN
   {
     VALUE_NODE($$) = ast_node_create(&node_type_expression);
@@ -320,6 +368,16 @@ number:
     
     ORIGINAL_NODE_APPEND($$, $1);
   } ;
+  
+keyword_as_string:
+  KEYWORD_IF       { $$ = $1; } |
+  KEYWORD_ELSE     { $$ = $1; } |
+  KEYWORD_WHILE    { $$ = $1; } |
+  KEYWORD_FOR      { $$ = $1; } |
+  KEYWORD_FOREACH  { $$ = $1; } |
+  KEYWORD_DO       { $$ = $1; } |
+  KEYWORD_BREAK    { $$ = $1; } |
+  KEYWORD_CONTINUE { $$ = $1; } ;
 
 fragment_or_variable:
   FRAGMENT { $$ = $1; } |
@@ -381,15 +439,16 @@ expression:
     ORIGINAL_NODE_APPEND($$, $2);
     ORIGINAL_NODE_NODE_APPEND($$, $3);
   } |
-  expression MINUS expression
+  expression WHITESPACE MINUS expression
   {
     VALUE_NODE($$) = ast_node_create(&node_type_minus);
     ast_node_append_child(VALUE_NODE($$), VALUE_NODE($1));
-    ast_node_append_child(VALUE_NODE($$), VALUE_NODE($3));
+    ast_node_append_child(VALUE_NODE($$), VALUE_NODE($4));
     
     ORIGINAL_NODE_NODE_APPEND($$, $1);
     ORIGINAL_NODE_APPEND($$, $2);
-    ORIGINAL_NODE_NODE_APPEND($$, $3);
+    ORIGINAL_NODE_APPEND($$, $3);
+    ORIGINAL_NODE_NODE_APPEND($$, $4);
   } ;
 
 comma_arguments:

@@ -34,6 +34,14 @@ extern struct tagbstring node_type_divide;
 extern struct tagbstring node_type_multiply;
 extern struct tagbstring node_type_add;
 extern struct tagbstring node_type_minus;
+extern struct tagbstring node_type_if;
+extern struct tagbstring node_type_else;
+extern struct tagbstring node_type_while;
+extern struct tagbstring node_type_for;
+extern struct tagbstring node_type_foreach;
+extern struct tagbstring node_type_do;
+extern struct tagbstring node_type_break;
+extern struct tagbstring node_type_continue;
 
 extern struct tagbstring pipeline_type_foreground;
 extern struct tagbstring pipeline_type_background;

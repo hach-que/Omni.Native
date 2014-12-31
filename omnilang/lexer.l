@@ -34,6 +34,15 @@
 
 [0-9]+                                  { OCOPY(number); yylval.number.value = strtoul(yytext, NULL, 10); return NUMBER; }
 
+if                                      { OCOPY(string); yylval.string.value = bfromcstr(yytext); return KEYWORD_IF; }
+else                                    { OCOPY(string); yylval.string.value = bfromcstr(yytext); return KEYWORD_ELSE; }
+while                                   { OCOPY(string); yylval.string.value = bfromcstr(yytext); return KEYWORD_WHILE; }
+for                                     { OCOPY(string); yylval.string.value = bfromcstr(yytext); return KEYWORD_FOR; }
+foreach                                 { OCOPY(string); yylval.string.value = bfromcstr(yytext); return KEYWORD_FOREACH; }
+do                                      { OCOPY(string); yylval.string.value = bfromcstr(yytext); return KEYWORD_DO; }
+break                                   { OCOPY(string); yylval.string.value = bfromcstr(yytext); return KEYWORD_BREAK; }
+continue                                { OCOPY(string); yylval.string.value = bfromcstr(yytext); return KEYWORD_CONTINUE; }
+
 [a-zA-Z0-9_][a-zA-Z_0-9]*               { OCOPY(string); yylval.string.value = bfromcstr(yytext); return VARIABLE; }
 [a-zA-Z\/_\.\~]                         { OCOPY(string); yylval.string.value = bfromcstr(yytext); return FRAGMENT; }
 [a-zA-Z\/_\.\-\~][a-zA-Z\/_0-9\.\-\~]*[a-zA-Z\/_0-9\.\~]  { OCOPY(string); yylval.string.value = bfromcstr(yytext); return FRAGMENT; }
@@ -42,8 +51,8 @@
 \$                                      { OCOPY(token); return DOLLAR; }
 [ \t]*\-\>[ \t]*                        { OCOPY(token); return ACCESS; }
 [ \t]*\=\>[ \t]*                        { OCOPY(token); return MAP; }
-[ \t]*\([ \t]*                          { OCOPY(token); return BEGIN_PAREN; }
-[ \t]*\)[ \t]*                          { OCOPY(token); return END_PAREN; }
+\([ \t]*                                { OCOPY(token); return BEGIN_PAREN; }
+[ \t]*\)                                { OCOPY(token); return END_PAREN; }
 [ \t]*\{[ \t]*                          { OCOPY(token); return BEGIN_BRACE; }
 [ \t]*\}[ \t]*                          { OCOPY(token); return END_BRACE; }
 [ \t]*\[[ \t]*                          { OCOPY(token); return BEGIN_SQUARE; }
@@ -56,7 +65,7 @@
 [ \t]*\;[ \t]*                          { OCOPY(token); return SEMICOLON; }
 
 [ \t]*\+[ \t]*                          { OCOPY(token); return ADD; }
-[ \t]*\-[ \t]*                          { OCOPY(token); return MINUS; }
+\-[ \t]*                                { OCOPY(token); return MINUS; }
 [ \t]*\*[ \t]*                          { OCOPY(token); return MULTIPLY; }
 [ \t]*\/[ \t]*                          { OCOPY(token); return DIVIDE; }
 
