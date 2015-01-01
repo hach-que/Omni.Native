@@ -68,6 +68,7 @@ as                                      { OCOPY(string); yylval.string.value = b
 [ \t]*\=[ \t]*                          { OCOPY(token); return EQUALS; }
 [ \t]*\,[ \t]*                          { OCOPY(token); return COMMA; }
 [ \t]*\;[ \t]*                          { OCOPY(token); return SEMICOLON; }
+[ \t]*:[ \t]*                           { OCOPY(token); return COLON; }
 
 [ \t]*\+[ \t]*                          { OCOPY(token); return ADD; }
 \-[ \t]*                                { OCOPY(token); return MINUS; }

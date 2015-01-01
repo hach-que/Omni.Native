@@ -40,7 +40,7 @@ ast_node* ast_root;
 %token <token> TOKEN WHITESPACE CONTINUING_NEWLINE TERMINATING_NEWLINE PIPE
 %token <token> PERCENT DOLLAR BEGIN_PAREN END_PAREN EQUALS BEGIN_SQUARE END_SQUARE
 %token <token> BEGIN_BRACE END_BRACE COMMA COMMAND_PIPE SEMICOLON AMPERSAND ERROR
-%token <token> ACCESS MAP MINUS ADD MULTIPLY DIVIDE AT
+%token <token> ACCESS MAP MINUS ADD MULTIPLY DIVIDE AT COLON
 %token <string> KEYWORD_WHILE KEYWORD_DO KEYWORD_FOR KEYWORD_FOREACH KEYWORD_BREAK
 %token <string> KEYWORD_CONTINUE KEYWORD_IF KEYWORD_ELSE KEYWORD_AS
 %token <number> NUMBER
@@ -123,6 +123,14 @@ statement:
   assignment
   {
     $$ = $1;
+  } |
+  COLON expression
+  {
+    VALUE_NODE($$) = ast_node_create(&node_type_expression);
+    ast_node_append_child(VALUE_NODE($$), VALUE_NODE($2));
+    
+    ORIGINAL_NODE_APPEND($$, $1);
+    ORIGINAL_NODE_NODE_APPEND($$, $2);
   } |
   KEYWORD_IF optional_whitespace fragment optional_whitespace BEGIN_BRACE statements END_BRACE KEYWORD_ELSE BEGIN_BRACE statements END_BRACE
   {
@@ -208,7 +216,7 @@ statement:
     KEYWORD_AS optional_whitespace mapping 
     BEGIN_BRACE statements END_BRACE
   {
-    VALUE_NODE($$) = ast_node_create(&node_type_do);
+    VALUE_NODE($$) = ast_node_create(&node_type_foreach);
     ast_node_append_child(VALUE_NODE($$), VALUE_NODE($3));
     ast_node_append_child(VALUE_NODE($$), VALUE_NODE($7));
     ast_node_append_child(VALUE_NODE($$), VALUE_NODE($9));
@@ -627,6 +635,18 @@ expression:
     ORIGINAL_NODE_NODE_APPEND($$, $1);
     ORIGINAL_NODE_APPEND($$, $2);
     ORIGINAL_NODE_NODE_APPEND($$, $3);
+  } |
+  expression BEGIN_PAREN END_PAREN
+  {
+    ast_node* arguments = ast_node_create(&node_type_arguments);
+    
+    VALUE_NODE($$) = ast_node_create(&node_type_invocation);
+    ast_node_append_child(VALUE_NODE($$), VALUE_NODE($1));
+    ast_node_append_child(VALUE_NODE($$), arguments);
+    
+    ORIGINAL_NODE_NODE_APPEND($$, $1);
+    ORIGINAL_NODE_APPEND($$, $2);
+    ORIGINAL_NODE_APPEND($$, $3);
   } |
   expression BEGIN_PAREN comma_arguments END_PAREN
   {
