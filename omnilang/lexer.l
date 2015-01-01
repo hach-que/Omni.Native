@@ -32,6 +32,8 @@
 <IN_DOUBLE_STRING>[^"\r\n]*             { OCAT(string); bcatcstr(yylval.string.value, yytext); }
 <IN_DOUBLE_STRING>\"                    { OCAT(string); BEGIN(INITIAL); return DOUBLE_QUOTED; }
 
+\<\?php.*\?\>                           { OCOPY(string); yylval.string.value = bfromcstr(yytext); return PHP; }
+
 [0-9]+                                  { OCOPY(number); yylval.number.value = strtoul(yytext, NULL, 10); return NUMBER; }
 
 if                                      { OCOPY(string); yylval.string.value = bfromcstr(yytext); return KEYWORD_IF; }
@@ -49,6 +51,7 @@ continue                                { OCOPY(string); yylval.string.value = b
 
 %                                       { OCOPY(token); return PERCENT; }
 \$                                      { OCOPY(token); return DOLLAR; }
+\?                                      { OCOPY(string); yylval.string.value = bfromcstr(yytext); return QUESTION_MARK; }
 [ \t]*\-\>[ \t]*                        { OCOPY(token); return ACCESS; }
 [ \t]*\=\>[ \t]*                        { OCOPY(token); return MAP; }
 \([ \t]*                                { OCOPY(token); return BEGIN_PAREN; }

@@ -40,16 +40,16 @@ ast_node* ast_root;
 %token <token> TOKEN WHITESPACE CONTINUING_NEWLINE TERMINATING_NEWLINE PIPE
 %token <token> PERCENT DOLLAR BEGIN_PAREN END_PAREN EQUALS BEGIN_SQUARE END_SQUARE
 %token <token> BEGIN_BRACE END_BRACE COMMA COMMAND_PIPE SEMICOLON AMPERSAND ERROR
-%token <token> ACCESS MAP MINUS ADD MULTIPLY DIVIDE 
+%token <token> ACCESS MAP MINUS ADD MULTIPLY DIVIDE
 %token <string> KEYWORD_WHILE KEYWORD_DO KEYWORD_FOR KEYWORD_FOREACH KEYWORD_BREAK
 %token <string> KEYWORD_CONTINUE KEYWORD_IF KEYWORD_ELSE
 %token <number> NUMBER
-%token <string> FRAGMENT SINGLE_QUOTED DOUBLE_QUOTED VARIABLE
+%token <string> FRAGMENT SINGLE_QUOTED DOUBLE_QUOTED VARIABLE QUESTION_MARK PHP
 
-%type <string> fragment_or_variable keyword_as_string
+%type <string> fragment_or_variable keyword_as_string key_name
 %type <node> root statement pipeline instruction
 %type <node> command arguments fragment fragments
-%type <node> capture assignment comma_arguments
+%type <node> assignment comma_arguments
 %type <node> key_values expression number statements
 %type <token> terminator optional_whitespace
 
@@ -181,40 +181,20 @@ instruction:
     ast_node_append_child(VALUE_NODE($$), VALUE_NODE($1));
     
     ORIGINAL_NODE_NODE_APPEND($$, $1);
-  } |
-  capture
-  {
-    $$ = $1;
   } ;
   
-capture:
-  PERCENT BEGIN_PAREN command END_PAREN
-  {
-    VALUE_NODE($$) = ast_node_create(&node_type_capture);
-    ast_node_append_child(VALUE_NODE($$), VALUE_NODE($3));
-    
-    ORIGINAL_NODE_APPEND($$, $1);
-    ORIGINAL_NODE_APPEND($$, $2);
-    ORIGINAL_NODE_NODE_APPEND($$, $3);
-    ORIGINAL_NODE_APPEND($$, $4);
-  } |
-  PERCENT BEGIN_SQUARE key_values END_SQUARE BEGIN_PAREN command END_PAREN
-  {
-    VALUE_NODE($$) = ast_node_create(&node_type_capture);
-    ast_node_append_child(VALUE_NODE($$), VALUE_NODE($3));
-    ast_node_append_child(VALUE_NODE($$), VALUE_NODE($6));
-    
-    ORIGINAL_NODE_APPEND($$, $1);
-    ORIGINAL_NODE_APPEND($$, $2);
-    ORIGINAL_NODE_NODE_APPEND($$, $3);
-    ORIGINAL_NODE_APPEND($$, $4);
-    ORIGINAL_NODE_APPEND($$, $5);
-    ORIGINAL_NODE_NODE_APPEND($$, $6);
-    ORIGINAL_NODE_APPEND($$, $7);
-  };
-  
 key_values:
-  fragment_or_variable EQUALS fragment
+  key_name
+  {
+    ast_node* key_value;
+    VALUE_NODE($$) = ast_node_create(&node_type_key_values);
+    key_value = ast_node_create(&node_type_key_value);
+    ast_node_set_string(key_value, bstrcpy(VALUE($1)));
+    ast_node_append_child(VALUE_NODE($$), key_value);
+    
+    ORIGINAL_NODE_APPEND($$, $1);
+  } |
+  key_name EQUALS fragment
   {
     ast_node* key_value;
     VALUE_NODE($$) = ast_node_create(&node_type_key_values);
@@ -227,7 +207,7 @@ key_values:
     ORIGINAL_NODE_APPEND($$, $2);
     ORIGINAL_NODE_NODE_APPEND($$, $3);
   } |
-  key_values COMMA fragment_or_variable EQUALS fragment
+  key_values COMMA key_name EQUALS fragment
   {
     ast_node* key_value;
     key_value = ast_node_create(&node_type_key_value);
@@ -239,13 +219,27 @@ key_values:
     ORIGINAL_NODE_APPEND($1, $3);
     ORIGINAL_NODE_APPEND($1, $4);
     ORIGINAL_NODE_NODE_APPEND($1, $5);
-  };
+  } |
+  key_values COMMA key_name
+  {
+    ast_node* key_value;
+    key_value = ast_node_create(&node_type_key_value);
+    ast_node_set_string(key_value, bstrcpy(VALUE($3)));
+    ast_node_append_child(VALUE_NODE($1), key_value);
+    
+    ORIGINAL_NODE_APPEND($1, $2);
+    ORIGINAL_NODE_APPEND($1, $3);
+  } ;
+  
+key_name:
+  fragment_or_variable { $$ = $1; } |
+  QUESTION_MARK { $$ = $1; } ;
   
 command:
   arguments
   {
     $$ = $1;
-  };
+  } ;
 
 arguments:
   fragments
@@ -308,6 +302,13 @@ fragment:
     
     ORIGINAL_NODE_APPEND($$, $1);
   } |
+  PHP
+  {
+    VALUE_NODE($$) = ast_node_create(&node_type_php);
+    ast_node_set_string(VALUE_NODE($$), bstrcpy(VALUE($1)));
+    
+    ORIGINAL_NODE_APPEND($$, $1);
+  } |
   SINGLE_QUOTED
   {
     VALUE_NODE($$) = ast_node_create(&node_type_single_quoted);
@@ -338,17 +339,45 @@ fragment:
     ORIGINAL_NODE_APPEND($$, $1);
     ORIGINAL_NODE_APPEND($$, $2);
   } |
+  DOLLAR QUESTION_MARK
+  {
+    VALUE_NODE($$) = ast_node_create(&node_type_variable);
+    ast_node_set_string(VALUE_NODE($$), bstrcpy(VALUE($2)));
+    
+    ORIGINAL_NODE_APPEND($$, $1);
+    ORIGINAL_NODE_APPEND($$, $2);
+  } |
   DOLLAR BEGIN_PAREN pipeline END_PAREN
   {
+    ast_node* empty_options;
+    empty_options = ast_node_create(&node_type_key_values);
+  
     VALUE_NODE($$) = ast_node_create(&node_type_expression);
     ast_node_append_child(VALUE_NODE($$), VALUE_NODE($3));
     
     ast_node_set_string(VALUE_NODE($3), bstrcpy(&pipeline_type_expression));
+    ast_node_append_child(VALUE_NODE($3), empty_options);
     
     ORIGINAL_NODE_APPEND($$, $1);
     ORIGINAL_NODE_APPEND($$, $2);
     ORIGINAL_NODE_NODE_APPEND($$, $3);
     ORIGINAL_NODE_APPEND($$, $4);
+  } |
+  DOLLAR BEGIN_SQUARE key_values END_SQUARE BEGIN_PAREN pipeline END_PAREN
+  {
+    VALUE_NODE($$) = ast_node_create(&node_type_expression);
+    ast_node_append_child(VALUE_NODE($$), VALUE_NODE($6));
+    
+    ast_node_set_string(VALUE_NODE($6), bstrcpy(&pipeline_type_expression));
+    ast_node_append_child(VALUE_NODE($6), VALUE_NODE($3));
+    
+    ORIGINAL_NODE_APPEND($$, $1);
+    ORIGINAL_NODE_APPEND($$, $2);
+    ORIGINAL_NODE_NODE_APPEND($$, $3);
+    ORIGINAL_NODE_APPEND($$, $4);
+    ORIGINAL_NODE_APPEND($$, $5);
+    ORIGINAL_NODE_NODE_APPEND($$, $6);
+    ORIGINAL_NODE_APPEND($$, $7);
   } |
   BEGIN_PAREN expression END_PAREN
   {

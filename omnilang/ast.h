@@ -42,6 +42,7 @@ extern struct tagbstring node_type_foreach;
 extern struct tagbstring node_type_do;
 extern struct tagbstring node_type_break;
 extern struct tagbstring node_type_continue;
+extern struct tagbstring node_type_php;
 
 extern struct tagbstring pipeline_type_foreground;
 extern struct tagbstring pipeline_type_background;

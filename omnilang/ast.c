@@ -35,6 +35,7 @@ struct tagbstring node_type_foreach = bsStatic("foreach");
 struct tagbstring node_type_do = bsStatic("do");
 struct tagbstring node_type_break = bsStatic("break");
 struct tagbstring node_type_continue = bsStatic("continue");
+struct tagbstring node_type_php = bsStatic("php");
 
 struct tagbstring pipeline_type_foreground = bsStatic("foreground");
 struct tagbstring pipeline_type_background = bsStatic("background");
