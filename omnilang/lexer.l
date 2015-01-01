@@ -32,7 +32,7 @@
 <IN_DOUBLE_STRING>[^"\r\n]*             { OCAT(string); bcatcstr(yylval.string.value, yytext); }
 <IN_DOUBLE_STRING>\"                    { OCAT(string); BEGIN(INITIAL); return DOUBLE_QUOTED; }
 
-\<\?php.*\?\>                           { OCOPY(string); yylval.string.value = bfromcstr(yytext); return PHP; }
+\<\?php(.|\r|\n)*\?\>                   { OCOPY(string); yylval.string.value = bfromcstr(yytext); return PHP; }
 
 [0-9]+                                  { OCOPY(number); yylval.number.value = strtoul(yytext, NULL, 10); return NUMBER; }
 
@@ -44,6 +44,7 @@ foreach                                 { OCOPY(string); yylval.string.value = b
 do                                      { OCOPY(string); yylval.string.value = bfromcstr(yytext); return KEYWORD_DO; }
 break                                   { OCOPY(string); yylval.string.value = bfromcstr(yytext); return KEYWORD_BREAK; }
 continue                                { OCOPY(string); yylval.string.value = bfromcstr(yytext); return KEYWORD_CONTINUE; }
+as                                      { OCOPY(string); yylval.string.value = bfromcstr(yytext); return KEYWORD_AS; }
 
 [a-zA-Z0-9_][a-zA-Z_0-9]*               { OCOPY(string); yylval.string.value = bfromcstr(yytext); return VARIABLE; }
 [a-zA-Z\/_\.\~]                         { OCOPY(string); yylval.string.value = bfromcstr(yytext); return FRAGMENT; }
@@ -52,6 +53,7 @@ continue                                { OCOPY(string); yylval.string.value = b
 %                                       { OCOPY(token); return PERCENT; }
 \$                                      { OCOPY(token); return DOLLAR; }
 \?                                      { OCOPY(string); yylval.string.value = bfromcstr(yytext); return QUESTION_MARK; }
+@                                       { OCOPY(token); return AT; }
 [ \t]*\-\>[ \t]*                        { OCOPY(token); return ACCESS; }
 [ \t]*\=\>[ \t]*                        { OCOPY(token); return MAP; }
 \([ \t]*                                { OCOPY(token); return BEGIN_PAREN; }

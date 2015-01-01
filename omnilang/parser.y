@@ -40,17 +40,18 @@ ast_node* ast_root;
 %token <token> TOKEN WHITESPACE CONTINUING_NEWLINE TERMINATING_NEWLINE PIPE
 %token <token> PERCENT DOLLAR BEGIN_PAREN END_PAREN EQUALS BEGIN_SQUARE END_SQUARE
 %token <token> BEGIN_BRACE END_BRACE COMMA COMMAND_PIPE SEMICOLON AMPERSAND ERROR
-%token <token> ACCESS MAP MINUS ADD MULTIPLY DIVIDE
+%token <token> ACCESS MAP MINUS ADD MULTIPLY DIVIDE AT
 %token <string> KEYWORD_WHILE KEYWORD_DO KEYWORD_FOR KEYWORD_FOREACH KEYWORD_BREAK
-%token <string> KEYWORD_CONTINUE KEYWORD_IF KEYWORD_ELSE
+%token <string> KEYWORD_CONTINUE KEYWORD_IF KEYWORD_ELSE KEYWORD_AS
 %token <number> NUMBER
 %token <string> FRAGMENT SINGLE_QUOTED DOUBLE_QUOTED VARIABLE QUESTION_MARK PHP
 
 %type <string> fragment_or_variable keyword_as_string key_name
 %type <node> root statement pipeline instruction
 %type <node> command arguments fragment fragments
-%type <node> assignment comma_arguments
+%type <node> assignment comma_arguments mapping
 %type <node> key_values expression number statements
+%type <node> array_def array_element array_decl
 %type <token> terminator optional_whitespace
 
 %nonassoc PIPE
@@ -60,7 +61,7 @@ ast_node* ast_root;
 %left ADD MINUS
 %left MULTIPLY DIVIDE
 %left BEGIN_PAREN
-%nonassoc ACCESS
+%left ACCESS
 //%right KEYWORD_IF 
 //%right KEYWORD_ELSE
 //%nonassoc TERMINATING_NEWLINE
@@ -102,9 +103,9 @@ terminator:
   SEMICOLON ;
 
 optional_whitespace:
-  /* empty */ |
-  WHITESPACE |
-  TERMINATING_NEWLINE ;
+  /* empty */         { $$.original = bfromcstr(""); } |
+  WHITESPACE          { $$.original = bfromcstr(""); ORIGINAL_APPEND($$, $1); } |
+  TERMINATING_NEWLINE { $$.original = bfromcstr(""); ORIGINAL_APPEND($$, $1); } ;
   
 statement:
   pipeline AMPERSAND
@@ -129,18 +130,139 @@ statement:
     ast_node_append_child(VALUE_NODE($$), VALUE_NODE($3));
     ast_node_append_child(VALUE_NODE($$), VALUE_NODE($6));
     ast_node_append_child(VALUE_NODE($$), VALUE_NODE($10));
+    
+    ORIGINAL_NODE_APPEND($$, $1);
+    ORIGINAL_NODE_APPEND($$, $2);
+    ORIGINAL_NODE_NODE_APPEND($$, $3);
+    ORIGINAL_NODE_APPEND($$, $4);
+    ORIGINAL_NODE_APPEND($$, $5);
+    ORIGINAL_NODE_NODE_APPEND($$, $6);
+    ORIGINAL_NODE_APPEND($$, $7);
+    ORIGINAL_NODE_APPEND($$, $8);
+    ORIGINAL_NODE_APPEND($$, $9);
+    ORIGINAL_NODE_NODE_APPEND($$, $10);
+    ORIGINAL_NODE_APPEND($$, $11);
   } |
   KEYWORD_IF optional_whitespace fragment optional_whitespace BEGIN_BRACE statements END_BRACE
   {
     VALUE_NODE($$) = ast_node_create(&node_type_if);
     ast_node_append_child(VALUE_NODE($$), VALUE_NODE($3));
     ast_node_append_child(VALUE_NODE($$), VALUE_NODE($6));
-  }
-  /* empty */ |
+    
+    ORIGINAL_NODE_APPEND($$, $1);
+    ORIGINAL_NODE_APPEND($$, $2);
+    ORIGINAL_NODE_NODE_APPEND($$, $3);
+    ORIGINAL_NODE_APPEND($$, $4);
+    ORIGINAL_NODE_APPEND($$, $5);
+    ORIGINAL_NODE_NODE_APPEND($$, $6);
+    ORIGINAL_NODE_APPEND($$, $7);
+  } |
+  KEYWORD_WHILE optional_whitespace fragment optional_whitespace BEGIN_BRACE statements END_BRACE
+  {
+    VALUE_NODE($$) = ast_node_create(&node_type_while);
+    ast_node_append_child(VALUE_NODE($$), VALUE_NODE($3));
+    ast_node_append_child(VALUE_NODE($$), VALUE_NODE($6));
+    
+    ORIGINAL_NODE_APPEND($$, $1);
+    ORIGINAL_NODE_APPEND($$, $2);
+    ORIGINAL_NODE_NODE_APPEND($$, $3);
+    ORIGINAL_NODE_APPEND($$, $4);
+    ORIGINAL_NODE_APPEND($$, $5);
+    ORIGINAL_NODE_NODE_APPEND($$, $6);
+    ORIGINAL_NODE_APPEND($$, $7);
+  } |
+  KEYWORD_DO optional_whitespace BEGIN_BRACE statements END_BRACE KEYWORD_WHILE optional_whitespace fragment
+  {
+    VALUE_NODE($$) = ast_node_create(&node_type_do);
+    ast_node_append_child(VALUE_NODE($$), VALUE_NODE($8));
+    ast_node_append_child(VALUE_NODE($$), VALUE_NODE($4));
+    
+    ORIGINAL_NODE_APPEND($$, $1);
+    ORIGINAL_NODE_APPEND($$, $2);
+    ORIGINAL_NODE_APPEND($$, $3);
+    ORIGINAL_NODE_NODE_APPEND($$, $4);
+    ORIGINAL_NODE_APPEND($$, $5);
+    ORIGINAL_NODE_APPEND($$, $6);
+    ORIGINAL_NODE_APPEND($$, $7);
+    ORIGINAL_NODE_NODE_APPEND($$, $8);
+  } |
+  /*KEYWORD_FOR optional_whitespace BEGIN_PAREN 
+    optional_whitespace statement optional_whitespace SEMICOLON 
+    optional_whitespace expression optional_whitespace SEMICOLON 
+    optional_whitespace statement optional_whitespace END_PAREN
+    BEGIN_BRACE statements END_BRACE
+  {
+    VALUE_NODE($$) = ast_node_create(&node_type_do);
+    ast_node_append_child(VALUE_NODE($$), VALUE_NODE($7));
+    ast_node_append_child(VALUE_NODE($$), VALUE_NODE($4));
+    
+    ORIGINAL_NODE_APPEND($$, $1);
+    ORIGINAL_NODE_APPEND($$, $2);
+    ORIGINAL_NODE_APPEND($$, $3);
+    ORIGINAL_NODE_NODE_APPEND($$, $4);
+    ORIGINAL_NODE_APPEND($$, $5);
+    ORIGINAL_NODE_APPEND($$, $6);
+    ORIGINAL_NODE_NODE_APPEND($$, $7);
+  } |*/
+  KEYWORD_FOREACH optional_whitespace fragment optional_whitespace
+    KEYWORD_AS optional_whitespace mapping 
+    BEGIN_BRACE statements END_BRACE
+  {
+    VALUE_NODE($$) = ast_node_create(&node_type_do);
+    ast_node_append_child(VALUE_NODE($$), VALUE_NODE($3));
+    ast_node_append_child(VALUE_NODE($$), VALUE_NODE($7));
+    ast_node_append_child(VALUE_NODE($$), VALUE_NODE($9));
+    
+    ORIGINAL_NODE_APPEND($$, $1);
+    ORIGINAL_NODE_APPEND($$, $2);
+    ORIGINAL_NODE_NODE_APPEND($$, $3);
+    ORIGINAL_NODE_APPEND($$, $4);
+    ORIGINAL_NODE_APPEND($$, $5);
+    ORIGINAL_NODE_APPEND($$, $6);
+    ORIGINAL_NODE_NODE_APPEND($$, $7);
+    ORIGINAL_NODE_APPEND($$, $8);
+    ORIGINAL_NODE_NODE_APPEND($$, $9);
+    ORIGINAL_NODE_APPEND($$, $10);
+  } |
+  /* empty */
   {
     VALUE_NODE($$) = NULL;
   };
 
+mapping:
+  DOLLAR VARIABLE optional_whitespace MAP optional_whitespace DOLLAR VARIABLE optional_whitespace
+  {
+    VALUE_NODE($$) = ast_node_create(&node_type_key_value);
+  
+    ast_node *key, *value;
+    key = ast_node_create(&node_type_fragment);
+    value = ast_node_create(&node_type_fragment);
+    ast_node_set_string(key, bstrcpy(VALUE($2)));
+    ast_node_set_string(value, bstrcpy(VALUE($7)));
+    ast_node_append_child(VALUE_NODE($$), key);
+    ast_node_append_child(VALUE_NODE($$), value);
+    
+    ORIGINAL_NODE_APPEND($$, $1);
+    ORIGINAL_NODE_APPEND($$, $2);
+    ORIGINAL_NODE_APPEND($$, $3);
+    ORIGINAL_NODE_APPEND($$, $4);
+    ORIGINAL_NODE_APPEND($$, $5);
+    ORIGINAL_NODE_APPEND($$, $6);
+    ORIGINAL_NODE_APPEND($$, $7);
+  } |
+  DOLLAR VARIABLE optional_whitespace
+  {
+    VALUE_NODE($$) = ast_node_create(&node_type_key_value);
+  
+    ast_node *key, *value;
+    key = ast_node_create(&node_type_fragment);
+    ast_node_set_string(key, bstrcpy(VALUE($2)));
+    ast_node_append_child(VALUE_NODE($$), key);
+    
+    ORIGINAL_NODE_APPEND($$, $1);
+    ORIGINAL_NODE_APPEND($$, $2);
+  } ;
+  
 assignment:
   DOLLAR VARIABLE EQUALS fragments
   {
@@ -387,6 +509,84 @@ fragment:
     ORIGINAL_NODE_APPEND($$, $1);
     ORIGINAL_NODE_NODE_APPEND($$, $2);
     ORIGINAL_NODE_APPEND($$, $3);
+  } |
+  array_decl
+  {
+    $$ = $1;
+  } ;
+
+array_decl:
+  AT BEGIN_PAREN optional_whitespace END_PAREN
+  {
+    VALUE_NODE($$) = ast_node_create(&node_type_array_decl);
+    
+    ORIGINAL_NODE_APPEND($$, $1);
+    ORIGINAL_NODE_APPEND($$, $2);
+    ORIGINAL_NODE_APPEND($$, $3);
+    ORIGINAL_NODE_APPEND($$, $4);
+  } |
+  AT BEGIN_PAREN array_def END_PAREN
+  {
+    VALUE_NODE($$) = ast_node_create(&node_type_array_decl);
+    ast_node_append_child(VALUE_NODE($$), VALUE_NODE($3));
+    
+    ORIGINAL_NODE_APPEND($$, $1);
+    ORIGINAL_NODE_APPEND($$, $2);
+    ORIGINAL_NODE_NODE_APPEND($$, $3);
+    ORIGINAL_NODE_APPEND($$, $4);
+  } |
+  AT BEGIN_PAREN array_def COMMA optional_whitespace END_PAREN
+  {
+    VALUE_NODE($$) = ast_node_create(&node_type_array_decl);
+    ast_node_append_child(VALUE_NODE($$), VALUE_NODE($3));
+    
+    ORIGINAL_NODE_APPEND($$, $1);
+    ORIGINAL_NODE_APPEND($$, $2);
+    ORIGINAL_NODE_NODE_APPEND($$, $3);
+    ORIGINAL_NODE_APPEND($$, $4);
+    ORIGINAL_NODE_APPEND($$, $5);
+    ORIGINAL_NODE_APPEND($$, $6);
+  } ;
+  
+array_def:
+  array_element
+  {
+    VALUE_NODE($$) = ast_node_create(&node_type_array_def);
+    ast_node_append_child(VALUE_NODE($$), VALUE_NODE($1));
+    
+    ORIGINAL_NODE_NODE_APPEND($$, $1);
+  } |
+  array_def COMMA array_element
+  {
+    ast_node_append_child(VALUE_NODE($1), VALUE_NODE($3));
+    
+    ORIGINAL_NODE_APPEND($1, $2);
+    ORIGINAL_NODE_NODE_APPEND($1, $3);
+  } ;
+  
+array_element:
+  optional_whitespace fragment optional_whitespace MAP optional_whitespace fragment optional_whitespace
+  {
+    VALUE_NODE($$) = ast_node_create(&node_type_array_element);
+    ast_node_append_child(VALUE_NODE($$), VALUE_NODE($2));
+    ast_node_append_child(VALUE_NODE($$), VALUE_NODE($6));
+
+    ORIGINAL_NODE_APPEND($$, $1);
+    ORIGINAL_NODE_NODE_APPEND($$, $2);
+    ORIGINAL_NODE_APPEND($$, $3);
+    ORIGINAL_NODE_APPEND($$, $4);
+    ORIGINAL_NODE_APPEND($$, $5);    
+    ORIGINAL_NODE_NODE_APPEND($$, $6);
+    ORIGINAL_NODE_APPEND($$, $7);
+  } |
+  optional_whitespace fragment optional_whitespace
+  {
+    VALUE_NODE($$) = ast_node_create(&node_type_array_element);
+    ast_node_append_child(VALUE_NODE($$), VALUE_NODE($2));
+
+    ORIGINAL_NODE_APPEND($$, $1);
+    ORIGINAL_NODE_NODE_APPEND($$, $2);
+    ORIGINAL_NODE_APPEND($$, $3);
   } ;
   
 number:
@@ -406,7 +606,8 @@ keyword_as_string:
   KEYWORD_FOREACH  { $$ = $1; } |
   KEYWORD_DO       { $$ = $1; } |
   KEYWORD_BREAK    { $$ = $1; } |
-  KEYWORD_CONTINUE { $$ = $1; } ;
+  KEYWORD_CONTINUE { $$ = $1; } |
+  KEYWORD_AS       { $$ = $1; } ;
 
 fragment_or_variable:
   FRAGMENT { $$ = $1; } |
