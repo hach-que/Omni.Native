@@ -53,6 +53,7 @@ ast_node* ast_root;
 %type <node> assignment comma_arguments mapping
 %type <node> key_values expression number statements
 %type <node> array_def array_element array_decl
+%type <node> function_declaration fragments_or_function_declaration
 %type <token> terminator optional_whitespace
 
 %nonassoc PIPE
@@ -271,9 +272,19 @@ mapping:
     ORIGINAL_NODE_APPEND($$, $1);
     ORIGINAL_NODE_APPEND($$, $2);
   } ;
-  
+
+fragments_or_function_declaration:
+  fragments
+  {
+    $$ = $1;
+  } |
+  function_declaration
+  {
+    $$ = $1;
+  } ;
+
 assignment:
-  DOLLAR VARIABLE EQUALS fragments
+  DOLLAR VARIABLE EQUALS fragments_or_function_declaration
   {
     ast_node* variable;
     variable = ast_node_create(&node_type_variable);
@@ -288,7 +299,7 @@ assignment:
     ORIGINAL_NODE_APPEND($$, $3);
     ORIGINAL_NODE_NODE_APPEND($$, $4);
   } |
-  COLON DOLLAR VARIABLE EQUALS fragments
+  COLON DOLLAR VARIABLE EQUALS fragments_or_function_declaration
   {
     ast_node* variable;
     variable = ast_node_create(&node_type_variable);
@@ -304,7 +315,7 @@ assignment:
     ORIGINAL_NODE_APPEND($$, $4);
     ORIGINAL_NODE_NODE_APPEND($$, $5);
   } |
-  COLON expression ACCESS expression EQUALS fragments
+  COLON expression ACCESS expression EQUALS fragments_or_function_declaration
   {
     VALUE_NODE($$) = ast_node_create(&node_type_access);
     ast_node_set_string(VALUE_NODE($$), bfromcstr("assign"));
@@ -319,7 +330,7 @@ assignment:
     ORIGINAL_NODE_APPEND($$, $5);
     ORIGINAL_NODE_NODE_APPEND($$, $6);
   } |
-  COLON expression ACCESS BEGIN_SQUARE END_SQUARE EQUALS fragments
+  COLON expression ACCESS BEGIN_SQUARE END_SQUARE EQUALS fragments_or_function_declaration
   {
     ast_node* fragment;
     fragment = ast_node_create(&node_type_fragment);
@@ -751,7 +762,25 @@ expression:
     ORIGINAL_NODE_APPEND($$, $2);
     ORIGINAL_NODE_APPEND($$, $3);
     ORIGINAL_NODE_NODE_APPEND($$, $4);
+  } |
+  function_declaration
+  {
+    $$ = $1;
   } ;
+  
+function_declaration:
+  BEGIN_PAREN END_PAREN MAP BEGIN_BRACE statements END_BRACE
+  {
+    VALUE_NODE($$) = ast_node_create(&node_type_function);
+    ast_node_append_child(VALUE_NODE($$), VALUE_NODE($5));
+    
+    ORIGINAL_NODE_APPEND($$, $1);
+    ORIGINAL_NODE_APPEND($$, $2);
+    ORIGINAL_NODE_APPEND($$, $3);
+    ORIGINAL_NODE_APPEND($$, $4);
+    ORIGINAL_NODE_NODE_APPEND($$, $5);
+    ORIGINAL_NODE_APPEND($$, $6);
+  };
 
 comma_arguments:
   fragments

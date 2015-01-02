@@ -39,6 +39,7 @@ struct tagbstring node_type_php = bsStatic("php");
 struct tagbstring node_type_array_decl = bsStatic("array_decl");
 struct tagbstring node_type_array_def = bsStatic("array_def");
 struct tagbstring node_type_array_element = bsStatic("array_element");
+struct tagbstring node_type_function = bsStatic("function");
 
 struct tagbstring pipeline_type_foreground = bsStatic("foreground");
 struct tagbstring pipeline_type_background = bsStatic("background");

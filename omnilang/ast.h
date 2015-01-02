@@ -46,6 +46,7 @@ extern struct tagbstring node_type_php;
 extern struct tagbstring node_type_array_decl;
 extern struct tagbstring node_type_array_def;
 extern struct tagbstring node_type_array_element;
+extern struct tagbstring node_type_function;
 
 extern struct tagbstring pipeline_type_foreground;
 extern struct tagbstring pipeline_type_background;
