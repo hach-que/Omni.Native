@@ -9,6 +9,8 @@
 #define OCOPY(s) { yylval.s.original = bfromcstr(yytext); }
 #define OCAT(s) { bcatcstr(yylval.s.original, yytext); }
 
+void reset_to_initial();
+
 %}
 
 %option yylineno
@@ -30,12 +32,15 @@
 \"                                      { OCOPY(string); yylval.string.value = bfromcstr(""); BEGIN(IN_DOUBLE_STRING); }
 <IN_SINGLE_STRING>[^'\r\n]*             { OCAT(string); bcatcstr(yylval.string.value, yytext); }
 <IN_SINGLE_STRING>\'                    { OCAT(string); BEGIN(INITIAL); return SINGLE_QUOTED; }
+<IN_SINGLE_STRING><<EOF>>               { return UNTERMINATED_LEXING_BLOCK; }
 <IN_DOUBLE_STRING>[^"\r\n]*             { OCAT(string); bcatcstr(yylval.string.value, yytext); }
 <IN_DOUBLE_STRING>\"                    { OCAT(string); BEGIN(INITIAL); return DOUBLE_QUOTED; }
+<IN_DOUBLE_STRING><<EOF>>               { return UNTERMINATED_LEXING_BLOCK; }
 
 \<\?php                                 { OCOPY(string); BEGIN(IN_PHP); yylval.string.value = bfromcstr(yytext); }
 <IN_PHP>\?\>                            { OCAT(string); BEGIN(INITIAL); bcatcstr(yylval.string.value, yytext); return PHP; }
 <IN_PHP>.|\r|\n                         { OCAT(string); bcatcstr(yylval.string.value, yytext); }
+<IN_PHP><<EOF>>                         { return UNTERMINATED_LEXING_BLOCK; }
 
 [0-9]+                                  { OCOPY(number); yylval.number.value = strtoul(yytext, NULL, 10); return NUMBER; }
 
@@ -85,3 +90,9 @@ as                                      { OCOPY(string); yylval.string.value = b
     /* Default rule for unknown characters */
 
 <*>.|\r|\n                              { printf("unable to handle text %s in lexer!\n", yytext); return ERROR; }
+
+%%
+
+void reset_to_initial() {
+  BEGIN(INITIAL);
+}

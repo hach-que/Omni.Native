@@ -79,6 +79,7 @@ PHP_FUNCTION(omnilang_parse) {
   yyin = NULL;
   yyout = NULL;
   has_error = 0;
+  reset_to_initial();
   buffer = yy_scan_bytes(code, code_len);
   yyparse();
   yy_delete_buffer(buffer);
