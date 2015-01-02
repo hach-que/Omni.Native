@@ -53,6 +53,7 @@ do                                      { OCOPY(string); yylval.string.value = b
 break                                   { OCOPY(string); yylval.string.value = bfromcstr(yytext); return KEYWORD_BREAK; }
 continue                                { OCOPY(string); yylval.string.value = bfromcstr(yytext); return KEYWORD_CONTINUE; }
 as                                      { OCOPY(string); yylval.string.value = bfromcstr(yytext); return KEYWORD_AS; }
+return                                  { OCOPY(string); yylval.string.value = bfromcstr(yytext); return KEYWORD_RETURN; }
 
 [a-zA-Z0-9_][a-zA-Z_0-9]*               { OCOPY(string); yylval.string.value = bfromcstr(yytext); return VARIABLE; }
 [a-zA-Z\/_\.\~]                         { OCOPY(string); yylval.string.value = bfromcstr(yytext); return FRAGMENT; }

@@ -43,7 +43,7 @@ ast_node* ast_root;
 %token <token> ACCESS MAP MINUS ADD MULTIPLY DIVIDE AT COLON
 %token <token> UNTERMINATED_LEXING_BLOCK
 %token <string> KEYWORD_WHILE KEYWORD_DO KEYWORD_FOR KEYWORD_FOREACH KEYWORD_BREAK
-%token <string> KEYWORD_CONTINUE KEYWORD_IF KEYWORD_ELSE KEYWORD_AS
+%token <string> KEYWORD_CONTINUE KEYWORD_IF KEYWORD_ELSE KEYWORD_AS KEYWORD_RETURN
 %token <number> NUMBER
 %token <string> FRAGMENT SINGLE_QUOTED DOUBLE_QUOTED VARIABLE QUESTION_MARK PHP
 
@@ -233,6 +233,15 @@ statement:
     ORIGINAL_NODE_APPEND($$, $8);
     ORIGINAL_NODE_NODE_APPEND($$, $9);
     ORIGINAL_NODE_APPEND($$, $10);
+  } |
+  KEYWORD_RETURN WHITESPACE expression
+  {
+    VALUE_NODE($$) = ast_node_create(&node_type_return);
+    ast_node_append_child(VALUE_NODE($$), VALUE_NODE($3));
+    
+    ORIGINAL_NODE_APPEND($$, $1);
+    ORIGINAL_NODE_APPEND($$, $2);
+    ORIGINAL_NODE_NODE_APPEND($$, $3);
   } |
   /* empty */
   {
