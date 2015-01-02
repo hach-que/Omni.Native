@@ -286,6 +286,57 @@ assignment:
     ORIGINAL_NODE_APPEND($$, $2);
     ORIGINAL_NODE_APPEND($$, $3);
     ORIGINAL_NODE_NODE_APPEND($$, $4);
+  } |
+  COLON DOLLAR VARIABLE EQUALS fragments
+  {
+    ast_node* variable;
+    variable = ast_node_create(&node_type_variable);
+    ast_node_set_string(variable, bstrcpy(VALUE($3)));
+    
+    VALUE_NODE($$) = ast_node_create(&node_type_assignment);
+    ast_node_append_child(VALUE_NODE($$), variable);
+    ast_node_append_child(VALUE_NODE($$), VALUE_NODE($5));
+    
+    ORIGINAL_NODE_APPEND($$, $1);
+    ORIGINAL_NODE_APPEND($$, $2);
+    ORIGINAL_NODE_APPEND($$, $3);
+    ORIGINAL_NODE_APPEND($$, $4);
+    ORIGINAL_NODE_NODE_APPEND($$, $5);
+  } |
+  COLON expression ACCESS expression EQUALS fragments
+  {
+    VALUE_NODE($$) = ast_node_create(&node_type_access);
+    ast_node_set_string(VALUE_NODE($$), bfromcstr("assign"));
+    ast_node_append_child(VALUE_NODE($$), VALUE_NODE($2));
+    ast_node_append_child(VALUE_NODE($$), VALUE_NODE($4));
+    ast_node_append_child(VALUE_NODE($$), VALUE_NODE($6));
+    
+    ORIGINAL_NODE_APPEND($$, $1);
+    ORIGINAL_NODE_NODE_APPEND($$, $2);
+    ORIGINAL_NODE_APPEND($$, $3);
+    ORIGINAL_NODE_NODE_APPEND($$, $4);
+    ORIGINAL_NODE_APPEND($$, $5);
+    ORIGINAL_NODE_NODE_APPEND($$, $6);
+  } |
+  COLON expression ACCESS BEGIN_SQUARE END_SQUARE EQUALS fragments
+  {
+    ast_node* fragment;
+    fragment = ast_node_create(&node_type_fragment);
+    ast_node_set_string(fragment, bfromcstr("[]"));
+    
+    VALUE_NODE($$) = ast_node_create(&node_type_access);
+    ast_node_set_string(VALUE_NODE($$), bfromcstr("assign"));
+    ast_node_append_child(VALUE_NODE($$), VALUE_NODE($2));
+    ast_node_append_child(VALUE_NODE($$), fragment);
+    ast_node_append_child(VALUE_NODE($$), VALUE_NODE($7));
+    
+    ORIGINAL_NODE_APPEND($$, $1);
+    ORIGINAL_NODE_NODE_APPEND($$, $2);
+    ORIGINAL_NODE_APPEND($$, $3);
+    ORIGINAL_NODE_APPEND($$, $4);
+    ORIGINAL_NODE_APPEND($$, $5);
+    ORIGINAL_NODE_APPEND($$, $6);
+    ORIGINAL_NODE_NODE_APPEND($$, $7);
   } ;
   
 pipeline:
