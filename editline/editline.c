@@ -4,12 +4,33 @@
 #include <readline/readline.h>
 #include <histedit.h>
 #include <phpmodule.h>
+#include <bstring.h>
 
 PHP_MODULE_BEGIN()
 
 static History *h = NULL;
 static EditLine* e = NULL;
 static char* prompt = NULL;
+static bstring* autocomplete_entries = NULL;
+static int autocomplete_count = 0;
+
+static unsigned char* _handle_tab(EditLine* e, int ch) {
+  char* buffer;
+  
+  if (autocomplete_count == 0) {
+    // Nothing to auto-complete.
+    return CC_REFRESH_BEEP;
+  } else if (autocomplete_count == 1) {
+    // Single entry, append it.
+    buffer = bstr2cstr(autocomplete_entries[0], '0');
+    el_insertstr(e, buffer);
+    free(buffer);
+    return CC_REFRESH;
+  } else {
+    // TODO
+    return CC_REFRESH_BEEP;
+  }
+}
 
 static char* _get_prompt(EditLine* e) {
   return prompt;
@@ -47,6 +68,8 @@ PHP_FUNCTION(editline_begin) {
   el_set(e, EL_HIST, history, h);
   el_set(e, EL_PROMPT, _get_prompt);
   el_set(e, EL_EDITOR, "emacs");
+  el_set(e, EL_ADDFN, "autocomplete", "autocomplete the current input", _handle_tab);
+  el_set(e, EL_BIND, "\t", "autocomplete", NULL);
   
   el_source(e, NULL);
   
@@ -149,6 +172,52 @@ PHP_FUNCTION(editline_history_add) {
   RETURN_TRUE;
 }
 
+PHP_FUNCTION(editline_insert) {
+  char* text;
+  int text_len;
+  
+  TRACE_FUNCTION_CALL();
+  
+  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &text, &text_len) == FAILURE) {
+    RETURN_FALSE;
+  }
+  
+  el_insertstr(e, text);
+  
+  RETURN_TRUE;
+}
+
+PHP_FUNCTION(editline_autocomplete_set) {
+  zval* arr;
+  HashPointer pointer;
+  zval** elem;
+  int a;
+  
+  TRACE_FUNCTION_CALL();
+  
+  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "a", &arr) == FAILURE) {
+    RETURN_FALSE;
+  }
+  
+  // free existing autocomplete
+  if (autocomplete_entries != NULL) {
+    efree(autocomplete_entries);
+  }
+  
+  a = 0;
+  autocomplete_count = zend_hash_num_elements(Z_ARRVAL_P(arr));
+  autocomplete_entries = emalloc(sizeof(bstring) * autocomplete_count);
+  for (
+    zend_hash_internal_pointer_reset_ex(Z_ARRVAL_P(arr), &pointer);
+    zend_hash_get_current_data_ex(Z_ARRVAL_P(arr), (void**)&elem, &pointer) == SUCCESS;
+    zend_hash_move_forward_ex(Z_ARRVAL_P(arr), &pointer)) {
+    
+    autocomplete_entries[a++] = blk2bstr(Z_STRVAL_PP(elem), Z_STRLEN_PP(elem));
+  }
+  
+  RETURN_TRUE;
+}
+
 PHP_MODULE(editline, 
   PHP_FE(editline_init, NULL)
   PHP_FE(editline_begin, NULL)
@@ -156,4 +225,5 @@ PHP_MODULE(editline,
   PHP_FE(editline_read, NULL)
   PHP_FE(editline_end, NULL)
   PHP_FE(editline_history_add, NULL)
+  PHP_FE(editline_autocomplete_set, NULL)
 )
