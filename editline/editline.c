@@ -15,17 +15,28 @@ static char* _get_prompt(EditLine* e) {
   return prompt;
 }
 
+PHP_FUNCTION(editline_init) {
+  h = history_init();
+  HistEvent ev;
+  
+  if (!h) {
+    RETURN_LONG(-1);
+  }
+  
+  history(h, &ev, H_SETSIZE, INT_MAX);
+  
+  RETURN_TRUE;
+}
+
 PHP_FUNCTION(editline_begin) {
   char* prompt_set;
   int prompt_len;
-  HistEvent ev;
   
   if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &prompt_set, &prompt_len) == FAILURE) {
     RETURN_FALSE;
   }
   
   e = el_init("EditLine", stdin, stdout, stderr);
-  h = history_init();
   
   if (!e || !h) {
     RETURN_LONG(-1);
@@ -33,10 +44,9 @@ PHP_FUNCTION(editline_begin) {
   
   _set_prompt(prompt_set, prompt_len);
   
-  history(h, &ev, H_SETSIZE, INT_MAX);
   el_set(e, EL_HIST, history, h);
   el_set(e, EL_PROMPT, _get_prompt);
-  //el_set(e, EL_EDITOR, "vi");
+  el_set(e, EL_EDITOR, "emacs");
   
   el_source(e, NULL);
   
@@ -87,6 +97,10 @@ PHP_FUNCTION(editline_read) {
   const char* buf = el_gets(e, &count);
   
   if (buf == NULL || count-- <= 0) {
+    array_init(return_value);
+    add_assoc_string_ex(return_value, "status", 7, "typing", 1);
+    add_assoc_long_ex(return_value, "cursor", 7, el_cursor(e, 0));
+    add_assoc_string_ex(return_value, "input", 6, "", 1);
     return;
   }
   
@@ -119,9 +133,27 @@ PHP_FUNCTION(editline_end) {
   el_end(e);
 }
 
+PHP_FUNCTION(editline_history_add) {
+  char* entry;
+  int entry_len;
+  
+  TRACE_FUNCTION_CALL();
+  
+  if (zend_parse_parameters(ZEND_NUM_ARGS() TSRMLS_CC, "s", &entry, &entry_len) == FAILURE) {
+    RETURN_FALSE;
+  }
+  
+  HistEvent ev;
+  history(h, &ev, H_ENTER, entry);
+  
+  RETURN_TRUE;
+}
+
 PHP_MODULE(editline, 
+  PHP_FE(editline_init, NULL)
   PHP_FE(editline_begin, NULL)
   PHP_FE(editline_set_prompt, NULL)
   PHP_FE(editline_read, NULL)
   PHP_FE(editline_end, NULL)
+  PHP_FE(editline_history_add, NULL)
 )
